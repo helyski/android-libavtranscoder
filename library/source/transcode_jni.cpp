@@ -6,11 +6,12 @@
 #include <string.h>
 #include "android/log.h"
 #include "Init.h"
+#include "Processor.h"
 
 
 extern "C"{
 
-#include "Processor.h"
+
 
     using namespace LibTranscode;
 
@@ -21,8 +22,7 @@ static JavaVM *g_vm = NULL;
 Processor *processor = NULL;
 
 JNIEXPORT jboolean JNICALL
-Java_com_tangjn_libtranscode_JNILibTranscode_StartEngine(JNIEnv *env, jclass clazz) {
-    // TODO: implement StartEngine()
+Java_com_tangjn_libtranscode_JNILibTranscode_Init(JNIEnv *env, jclass clazz) {
     processor = new Processor();
     return JNI_TRUE;
 }
@@ -41,6 +41,37 @@ Java_com_tangjn_libtranscode_JNILibTranscode_StartHWDecode(JNIEnv *env, jclass c
     processor->StartDecode();
     return 1;
 }
+
+JNIEXPORT jint JNICALL
+Java_com_tangjn_libtranscode_JNILibTranscode_EnableMediaCodec(JNIEnv *env, jclass clazz,
+                                                              jboolean enable) {
+    // TODO: implement EnableMediaCodec()
+}
+
+JNIEXPORT jint JNICALL
+Java_com_tangjn_libtranscode_JNILibTranscode_SetOutputFileDirection(JNIEnv *env, jclass clazz,
+                                                                    jstring dir) {
+    // TODO: implement SetOutputFileDirection()
+}
+
+JNIEXPORT jint JNICALL
+Java_com_tangjn_libtranscode_JNILibTranscode_SetTranscodeOutputType(JNIEnv *env, jclass clazz,
+                                                                    jint out_put_type) {
+    // TODO: implement SetTranscodeOutputType()
+}
+
+JNIEXPORT jint JNICALL
+Java_com_tangjn_libtranscode_JNILibTranscode_StartTranscode(JNIEnv *env, jclass clazz,
+                                                            jstring video_path) {
+    // TODO: implement StartTranscode()
+}
+
+JNIEXPORT jint JNICALL
+Java_com_tangjn_libtranscode_JNILibTranscode_StopTranscode(JNIEnv *env, jclass clazz) {
+    // TODO: implement StopTranscode()
+}
+
+
 
 }
 
@@ -62,4 +93,5 @@ JNIEXPORT jint JNICALL  JNI_OnLoad(JavaVM* vm, void* reserved) {
 
     return result;
 }
+
 

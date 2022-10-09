@@ -4,11 +4,16 @@
 
 #ifndef ANDROID_LIBTRANSCODE_PROCESSOR_H
 #define ANDROID_LIBTRANSCODE_PROCESSOR_H
+
+#include "DataStruct.h"
+#include "RingQueue.h"
+
 extern "C"
 {
 #include "Init.h"
 #include "Decoder.h"
 #include "ffmpeg-wrappers/hw_decode.h"
+
 
 namespace LibTranscode {
 
@@ -25,6 +30,7 @@ namespace LibTranscode {
     private:
         Init *init = NULL;
         Decoder *decoder = NULL;
+        RingQueue<YUVFrame> *yuvRingQueue  = new RingQueue<YUVFrame>(4);
     };
 
 }
