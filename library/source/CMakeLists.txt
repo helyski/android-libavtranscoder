@@ -30,6 +30,7 @@ include_directories(
         ${CMAKE_SOURCE_DIR}/source/ffmpeg/include
         ${CMAKE_SOURCE_DIR}/source/ffmpeg/include/libavutil
         ${CMAKE_SOURCE_DIR}/source/core/ffmpeg-wrappers
+        ${CMAKE_SOURCE_DIR}/source/core/thread
 )
 
 # 设置源文件，单个文件用set，多个文件可以使用file

@@ -1,5 +1,5 @@
 //
-// Created by HelyskiTank on 2022/9/16.
+// Created by Tank on 2022/9/16.
 //
 
 #ifndef  ANDROID_LIBTRANSCODE_HW_DECODE_H

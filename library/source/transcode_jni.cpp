@@ -1,5 +1,5 @@
 //
-// Created by Administrator on 2021/7/15 0015.
+// Created and modified by Tank on 2022/10/10.
 //
 #include <jni.h>
 #include <string>
@@ -8,12 +8,12 @@
 #include "Init.h"
 #include "Processor.h"
 
+using namespace LibTranscode;
 
-extern "C"{
-
-
-
-    using namespace LibTranscode;
+#ifdef __cplusplus
+extern "C"
+{
+#endif
 
 #include <libavcodec/jni.h>
 
@@ -21,59 +21,136 @@ static JavaVM *g_vm = NULL;
 
 Processor *processor = NULL;
 
-JNIEXPORT jboolean JNICALL
+
+/**
+ * Init processor.
+ * @param env
+ * @param clazz
+ * @return JNI_TRUE if init success;
+ *          JNI_FALSE if init error;
+ */
+JNIEXPORT jint JNICALL
 Java_com_tangjn_libtranscode_JNILibTranscode_Init(JNIEnv *env, jclass clazz) {
+    int ret = JNI_FALSE;
     processor = new Processor();
-    return JNI_TRUE;
-}
-
-
-JNIEXPORT void JNICALL
-Java_com_tangjn_libtranscode_JNILibTranscode_OpenFFmpegLog(
-        JNIEnv *env,
-        jclass clazz){
-    processor->OpenFFLog();
+    if (processor) {
+        ret = JNI_TRUE;
+    }
+    return ret;
 }
 
 JNIEXPORT jint JNICALL
-Java_com_tangjn_libtranscode_JNILibTranscode_StartHWDecode(JNIEnv *env, jclass clazz) {
-
-    processor->StartDecode();
-    return 1;
+Java_com_tangjn_libtranscode_JNILibTranscode_UnInit(JNIEnv *env, jclass clazz) {
+    // TODO: implement UnInit()
+    int ret = JNI_FALSE;
+    processor = new Processor();
+    if (processor) {
+        ret = JNI_TRUE;
+    }
+    return ret;
 }
 
+
 JNIEXPORT jint JNICALL
-Java_com_tangjn_libtranscode_JNILibTranscode_EnableMediaCodec(JNIEnv *env, jclass clazz,
-                                                              jboolean enable) {
-    // TODO: implement EnableMediaCodec()
+Java_com_tangjn_libtranscode_JNILibTranscode_OpenFFmpegLog(JNIEnv *env, jclass clazz) {
+    int ret = JNI_FALSE;
+    if (processor) {
+        processor->OpenFFLog();
+        ret = JNI_TRUE;
+    }
+    return ret;
+}
+
+
+JNIEXPORT jint JNICALL
+Java_com_tangjn_libtranscode_JNILibTranscode_SetEnableMediaCodec(JNIEnv *env, jclass clazz,
+                                                                 jboolean enable) {
+    // TODO: implement SetEnableMediaCodec()
+    int ret = JNI_FALSE;
+    if (processor) {
+        // TODO next
+        ret = JNI_TRUE;
+    }
+    return ret;
 }
 
 JNIEXPORT jint JNICALL
 Java_com_tangjn_libtranscode_JNILibTranscode_SetOutputFileDirection(JNIEnv *env, jclass clazz,
                                                                     jstring dir) {
     // TODO: implement SetOutputFileDirection()
+    int ret = JNI_FALSE;
+    if (processor) {
+        // TODO next
+        ret = JNI_TRUE;
+    }
+    return ret;
 }
 
 JNIEXPORT jint JNICALL
 Java_com_tangjn_libtranscode_JNILibTranscode_SetTranscodeOutputType(JNIEnv *env, jclass clazz,
                                                                     jint out_put_type) {
     // TODO: implement SetTranscodeOutputType()
+    int ret = JNI_FALSE;
+    if (processor) {
+        // TODO next
+        ret = JNI_TRUE;
+    }
+    return ret;
 }
 
 JNIEXPORT jint JNICALL
 Java_com_tangjn_libtranscode_JNILibTranscode_StartTranscode(JNIEnv *env, jclass clazz,
-                                                            jstring video_path) {
-    // TODO: implement StartTranscode()
+                                                            jstring src_video_path,
+                                                            jstring dest_video_name,
+                                                            jfloat seek_seconds, jint dest_width,
+                                                            jint dest_height, jint dest_bitrate,
+                                                            jint dest_fps, jboolean need_audio) {
+    int ret = JNI_FALSE;
+
+    char *mSrcVideoPath = 0;
+    char *mOutputFileName = 0;
+
+    jboolean isCopy = false;
+    mSrcVideoPath = (char *)env->GetStringUTFChars(src_video_path,&isCopy);
+    mOutputFileName = (char *)env->GetStringUTFChars(dest_video_name,&isCopy);
+
+    if(!mSrcVideoPath || strlen(mSrcVideoPath)<=0){
+        goto end;
+    }
+
+
+
+    if (processor) {
+        processor->StartTranscode(mSrcVideoPath,mOutputFileName,seek_seconds,dest_width,dest_height,dest_bitrate,dest_fps,need_audio);
+        ret = JNI_TRUE;
+    }
+
+    end:
+    if(mSrcVideoPath){
+        env->ReleaseStringUTFChars(src_video_path,mSrcVideoPath);
+    }
+
+    if(mOutputFileName){
+        env->ReleaseStringUTFChars(dest_video_name,mOutputFileName);
+    }
+
+    return ret;
 }
 
 JNIEXPORT jint JNICALL
 Java_com_tangjn_libtranscode_JNILibTranscode_StopTranscode(JNIEnv *env, jclass clazz) {
     // TODO: implement StopTranscode()
+    int ret = JNI_FALSE;
+    if(processor){
+        // TODO next
+        ret = JNI_TRUE;
+    }
+    return ret;
 }
 
-
-
-}
+#ifdef __cplusplus
+};
+#endif
 
 JNIEXPORT jint JNICALL  JNI_OnLoad(JavaVM* vm, void* reserved) {
 
@@ -93,5 +170,3 @@ JNIEXPORT jint JNICALL  JNI_OnLoad(JavaVM* vm, void* reserved) {
 
     return result;
 }
-
-

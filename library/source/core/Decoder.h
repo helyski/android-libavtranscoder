@@ -1,25 +1,38 @@
 //
-// Created by mapgoo1426 on 2022/10/9.
+// Created by Tank on 2022/10/9.
 //
 
 #ifndef ANDROID_LIBTRANSCODE_DECODER_H
 #define ANDROID_LIBTRANSCODE_DECODER_H
+
+#include <SingleThread.h>
 
 extern "C"
 {
 #include "hw_decode.h"
 
 namespace LibTranscode {
-    class Decoder {
+    class Decoder : public SingleThread::ThreadProc{
     public:
         Decoder();
 
         ~Decoder();
 
-        int StartDecode();
+        bool StartThread();
+        void StopThread();
+
+        int StartDecode(const char* srcVideoPath,float seek_seconds);
+
+
 
     private:
+        bool process(int thread_id, void *env);
 
+    private:
+        SingleThread mThread;
+        bool mIsThreadStart;
+        bool mExit;
+        const char * mThreadName = "AvTranscoder_decoder";
     };
 
 }
