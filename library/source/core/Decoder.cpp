@@ -54,7 +54,7 @@ extern "C"
 //            usleep(1000000);
 //            LOGW("Decoder_tid%d::%d!",thread_id,temp++);
 
-            start_hw_decode();
+            start_hw_decode(mSrcVideoPath,mDecodeSeekSeconds);
             break;
         }
         LOGW("Decoder_tid%d::exit loop in process!",thread_id);

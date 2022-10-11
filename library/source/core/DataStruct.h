@@ -5,6 +5,8 @@
 #ifndef ANDROID_LIBTRANSCODE_DATASTRUCT_H
 #define ANDROID_LIBTRANSCODE_DATASTRUCT_H
 
+#include "stdint.h"
+
 typedef struct _basicTranscodingParams{
     int width;
     int height;
@@ -30,6 +32,30 @@ struct H264Frame{
     int width;
     int height;
     int len;
+};
+
+
+struct _VideoInfo {
+    int width;
+    int height;
+    int b_bnnex_b;
+    int bitrate;
+    int fps;
+    int gop;
+    unsigned char *decode_info;
+    int decode_info_len;
+    int64_t durationus;
+};
+
+struct _AudioInfo {
+    int sample_rate;
+    int sample_size;
+    int frame_size;
+    int channels;
+    int bitrate;
+    unsigned char *decode_info;
+    int decode_info_len;
+    int64_t durationus;
 };
 
 #endif //ANDROID_LIBTRANSCODE_DATASTRUCT_H

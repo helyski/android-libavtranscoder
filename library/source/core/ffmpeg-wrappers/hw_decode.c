@@ -4,13 +4,15 @@
 
 #include "hw_decode.h"
 
-
+const char * TAG = "hw_decode";
 
 AVBufferRef *hw_device_ctx = NULL;
 enum AVPixelFormat hw_pix_fmt;
 char is_stop = 0;
 enum DecodeState decode_state = DECODE_NOT_START;
 
+VideoInfo  *videoInfo;
+AudioInfo *audioInfo;
 
 // For test.
 FILE *output_file = NULL;
@@ -18,6 +20,10 @@ FILE *output_file = NULL;
 
 // For test.
 int write_head_yuv = 0;
+
+#if 1
+const char * output_file_name = "/sdcard/mapgoologcat/hello.yuv";
+#endif
 
 enum DecodeState get_decode_state(){
 
@@ -29,12 +35,12 @@ int stop_hw_decode(){
     return 0;
 }
 
-int start_hw_decode() {
+int start_hw_decode(const char* input_file_path,float seek_seconds) {
     is_stop = 0;
     decode_state = DECODING;
 
-    AVFormatContext *input_ctx = NULL;
     int video_stream, ret;
+    AVFormatContext *input_ctx = NULL;
     AVStream *video = NULL;
     AVCodecContext *decoder_ctx = NULL;
     AVCodec *decoder = NULL;
@@ -42,62 +48,67 @@ int start_hw_decode() {
     enum AVHWDeviceType type;
     int i;
 
-    const char * input_file_name = "/storage/sdcard0/DVR/front/loop/00_20220819125342.ts";
-    const char * output_file_name = "/sdcard/mapgoologcat/hello.yuv";
+    /**
+     * VideoInfo and AudioInfo
+     */
 
-    __android_log_print(5, "AVFILTER_TEST", "testHWDecode");
+    videoInfo = (VideoInfo*)malloc(sizeof (VideoInfo));
+    memset(videoInfo,0,sizeof(VideoInfo));
 
+    audioInfo = (AudioInfo*)malloc(sizeof (AudioInfo));
+    memset(audioInfo,0,sizeof (AudioInfo));
 
-    const char* hw_device_name = "mediacodec";
+    /**
+     * Find a hw device , Android mostly is mediacodec.If can not find hw device,process will exit.
+     */
+    const char *hw_device_name = "mediacodec";
     type = av_hwdevice_find_type_by_name(hw_device_name);
-    __android_log_print(5, "AVFILTER_TEST", "AVHWDeviceType:%d",type);
-    __android_log_print(5, "AVFILTER_TEST", "av_hwdevice_get_type_name:%s",av_hwdevice_get_type_name(type));
+
+    LOGW("%s :: av_hwdevice_find_type_by_name(%s) type=%d ",TAG,hw_device_name,type);
+    LOGW("%s :: av_hwdevice_get_type_name(%d) name=%s ",TAG,type,av_hwdevice_get_type_name(type));
+
     if(type == AV_HWDEVICE_TYPE_NONE){
-        __android_log_print(5,"AVFILTER_TEST","hw_decode_init Can not found av_hwdevice by name:%s", hw_device_name);
-        __android_log_print(5,"AVFILTER_TEST","hw_decode_init Support av_hwdevice list:");
+        LOGW("%s :: can not found 'mediacodec',encoder will exit.Support hw_device list:",TAG);
         while((type = av_hwdevice_iterate_types(type)) != AV_HWDEVICE_TYPE_NONE) {
-            __android_log_print(5,"AVFILTER_TEST","--%s",av_hwdevice_get_type_name(type));
+            LOGW("%s :: hw_device:",TAG,av_hwdevice_get_type_name(type));
         }
-        return -1;
+        goto end;
     }
 
-    if(avformat_open_input(&input_ctx,input_file_name,NULL,NULL) !=0){
-        __android_log_print(5,"AVFILTER_TEST","Cannot open input file '%s'",input_file_name);
-        return -1;
+    /**
+     * Open input file, AVFormatContext will be init.
+     */
+    if(avformat_open_input(&input_ctx,input_file_path,NULL,NULL) !=0){
+        LOGW("%s :: avformat_open_input can not open input file '%s'",TAG,input_file_path);
+        goto end;
     }
+    LOGW("%s :: avformat_open_input success!",TAG);
 
-    LOGW("avformat_open_input success!");
-
-
-
+    /**
+     * Find Stream Info,Get Video Info from video stream and audio stream.
+     */
     if(avformat_find_stream_info(input_ctx,NULL) <0){
-        LOGW("avformat_find_stream_info failed!!!");
-        return -1;
+        LOGW("%s :: avformat_find_stream_info error...",TAG);
+        goto end;
     }
+    LOGW("%s :: avformat_find_stream_info success!",TAG);
 
-    LOGW("avformat_find_stream_info success!");
-
-
-    ret = av_find_best_stream(input_ctx,AVMEDIA_TYPE_VIDEO,-1,-1,NULL,0);
-
-    LOGW("avformat_find_stream_info video_bitrate:%lld, width:%d, height:%d",input_ctx->bit_rate,input_ctx->streams[ret]->codecpar->width,input_ctx->streams[ret]->codecpar->height);
-
-
-    if(ret<0){
-        LOGW("av_find_best_stream failed!");
-        return -1;
+    ret = av_find_best_stream(input_ctx, AVMEDIA_TYPE_VIDEO, -1, -1, NULL, 0);
+    LOGW("%s :: avformat_find_stream_info video_bitrate:%lld, width:%d, height:%d",TAG,
+         input_ctx->bit_rate,input_ctx->streams[ret]->codecpar->width, input_ctx->streams[ret]->codecpar->height);
+    if (ret < 0) {
+        LOGW("%s :: av_find_best_stream error...",TAG);
+        goto end;
     }
-
-
-
-
     video_stream = ret;
 
+    /**
+     * Find decoder.
+     */
     decoder = avcodec_find_decoder_by_name("h264_mediacodec");
-
     if(!decoder){
-        LOGD("can not find ‘h264_mediacodec’");
-        return -1;
+        LOGD("%s :: avcodec_find_decoder_by_name can not find 'h264_mediacodec'",TAG);
+        goto end;
     }
 
 
@@ -179,7 +190,7 @@ int start_hw_decode() {
         av_packet_unref(&packet);
     }
 
-
+    end:
     packet.data = NULL;
     packet.size = 0;
     ret = decode_write(decoder_ctx, &packet);
@@ -191,6 +202,15 @@ int start_hw_decode() {
     avformat_close_input(&input_ctx);
     av_buffer_unref(&hw_device_ctx);
 
+    if(videoInfo){
+        free(videoInfo);
+        videoInfo = NULL;
+    }
+
+    if(audioInfo){
+        free(audioInfo);
+        audioInfo = NULL;
+    }
 
     decode_state = DECODE_FINISH;
     return 0;
@@ -305,4 +325,13 @@ int decode_write(AVCodecContext *avctx, AVPacket *packet) {
         if (ret < 0)
             return ret;
     }
+}
+
+
+VideoInfo* getVideoInfo(){
+    return videoInfo;
+}
+
+AudioInfo* getAudioInfo(){
+    return audioInfo;
 }

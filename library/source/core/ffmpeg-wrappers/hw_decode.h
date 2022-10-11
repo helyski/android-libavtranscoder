@@ -17,6 +17,10 @@
 #include <libswscale/swscale.h>
 
 #include "debug.h"
+#include "DataStruct.h"
+
+typedef struct _VideoInfo VideoInfo;
+typedef struct _AudioInfo AudioInfo;
 
 enum DecodeState{
     DECODE_NOT_START = 0,
@@ -30,9 +34,13 @@ enum AVPixelFormat get_hw_format(AVCodecContext *ctx, const enum AVPixelFormat *
 
 int decode_write(AVCodecContext *avctx, AVPacket *packet);
 
-int start_hw_decode();
+int start_hw_decode(const char* input_file_path,float seek_seconds);
 
 int stop_hw_decode();
+
+VideoInfo * get_video_info();
+
+AudioInfo * get_audio_info();
 
 //enum DcodeState get_decode_state();
 
