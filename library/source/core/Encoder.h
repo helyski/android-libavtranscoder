@@ -7,12 +7,15 @@
 
 
 #include <SingleThread.h>
+#include "debug.h"
+#include "RingQueue.h"
+#include "DataStruct.h"
 
 extern "C"
 {
-#include "hw_decode.h"
 
-namespace LibTranscode {
+
+
 
     class Encoder : public SingleThread::ThreadProc{
     public:
@@ -22,6 +25,10 @@ namespace LibTranscode {
 
         bool StartThread();
         void StopThread();
+
+        int SetInputBuffer(RingQueue<YUVFrame> *yuvBuffer);
+
+        int SetOutputBuffer(RingQueue<H264Frame> *h264Buffer);
 
         int StartEncode();
 
@@ -34,10 +41,14 @@ namespace LibTranscode {
         SingleThread mThread;
         bool mIsThreadStart;
         bool mExit;
-        const char * mThreadName = "AvTranscoder_encoder";
+        const char * mThreadName = "AvEncoder";
+
+        RingQueue<YUVFrame>  *mYuvBuffer;
+        RingQueue<H264Frame> *mH264Buffer;
+
     };
 
-}
+
 
 };
 

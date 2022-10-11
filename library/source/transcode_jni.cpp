@@ -143,6 +143,7 @@ Java_com_tangjn_libtranscode_JNILibTranscode_StopTranscode(JNIEnv *env, jclass c
     int ret = JNI_FALSE;
     if(processor){
         // TODO next
+        processor->StopTranscode();
         ret = JNI_TRUE;
     }
     return ret;

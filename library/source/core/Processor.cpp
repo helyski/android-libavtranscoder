@@ -11,8 +11,8 @@ namespace LibTranscode {
         init = new Init();
         mDecoder = 0;
         mEncoder = 0;
-        mDecodeRingBuffer  = new RingQueue<YUVFrame>(4);
-        mEncodeRingBuffer = new RingQueue<H264Frame>(10);
+        mDecodeBuffer  = new RingQueue<YUVFrame>(4);
+        mEncodeBuffer = new RingQueue<H264Frame>(10);
 
     }
 
@@ -50,6 +50,8 @@ namespace LibTranscode {
 //
 //        }
 
+        LOGW("srcVideoPath:%s,outputName:%s",videoPath,outputName);
+
 
         if(mDecoder){
             mDecoder->StopThread();
@@ -57,6 +59,8 @@ namespace LibTranscode {
             mDecoder = NULL;
         }
         mDecoder = new Decoder();
+        mDecoder->SetDecodeFileInfo(videoPath,seek_seconds);
+        mDecoder->SetDecodeBuffer(mDecodeBuffer);
         mDecoder->StartThread();
 
 
@@ -66,6 +70,8 @@ namespace LibTranscode {
             mEncoder = NULL;
         }
         mEncoder = new Encoder();
+        mEncoder->SetInputBuffer(mDecodeBuffer);
+        mEncoder->SetOutputBuffer(mEncodeBuffer);
         mEncoder->StartThread();
 
         return 1;
@@ -79,6 +85,13 @@ namespace LibTranscode {
             delete mDecoder;
             mDecoder = NULL;
         }
+
+        if(mEncoder){
+            mEncoder->StopThread();
+            delete mEncoder;
+            mEncoder = NULL;
+        }
+
         return 0;
     }
 

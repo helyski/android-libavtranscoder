@@ -64,12 +64,14 @@ public class MainActivity extends AppCompatActivity  implements View.OnClickList
     public void onClick(View view) {
         switch (view.getId()){
             case R.id.btn_testFilter:
-//                Log.e(TAG,"AAAAAAAAAAAAAAAAAAAAAAAAAA");
+                Log.e(TAG,"FFFFFFFFFFFFFFFFFFFFFFFFFF");
 ////                VideoFactory.testFilter();
 //                String newFileName = String.format(Locale.CHINA,"transcode%d_%s",System.currentTimeMillis(),
 //                        SrcFilePath.substring(SrcFilePath.lastIndexOf("/")+1));
 //                Log.e(TAG,newFileName);
 //                JNILibTranscode.StartTranscode(SrcFilePath,newFileName,12,640,480,2000,15,true);
+
+                JNILibTranscode.StopTranscode();
                 break;
 
             case R.id.btnStartTranscode:

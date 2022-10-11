@@ -15,7 +15,14 @@
 #include <libavfilter/buffersrc.h>
 #include <libavutil/avutil.h>
 #include <libswscale/swscale.h>
+
 #include "debug.h"
+
+enum DecodeState{
+    DECODE_NOT_START = 0,
+    DECODING,
+    DECODE_FINISH
+};
 
 int hw_decoder_init(AVCodecContext *ctx, const enum AVHWDeviceType type);
 
@@ -23,7 +30,10 @@ enum AVPixelFormat get_hw_format(AVCodecContext *ctx, const enum AVPixelFormat *
 
 int decode_write(AVCodecContext *avctx, AVPacket *packet);
 
-int start_hwdecode();
+int start_hw_decode();
 
+int stop_hw_decode();
+
+//enum DcodeState get_decode_state();
 
 #endif //ANDROID_LIBTRANSCODE_HW_DECODE_H

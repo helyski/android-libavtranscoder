@@ -3,9 +3,6 @@
 
 #include "Lock.h"
 
-namespace LibTranscode {
-
-
 class SingleThread {
 public:
 
@@ -37,9 +34,5 @@ private:
     ThreadProc* proc_;
     int id_;
 };
-
-
-}
-
 
 #endif

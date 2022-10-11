@@ -1,16 +1,11 @@
 //
 // Created by Tank on 2022/10/9.
 //
-
+#include "Encoder.h"
 extern "C"
 {
-#include "Encoder.h"
 
-
-namespace LibTranscode {
-
-
-    Encoder::Encoder() {
+    Encoder::Encoder(){
         mIsThreadStart = false;
         mExit = false;
 
@@ -51,13 +46,24 @@ namespace LibTranscode {
         int temp = 0;
         while(!mExit){
             usleep(1000000);
-            LOGW("Decoder_tid%d::%d!",thread_id,temp++);
+            LOGW("Encoder_tid%d::%d!",thread_id,temp++);
             // TODO encode here
 //            break;
         }
         LOGW("Encoder_tid%d::exit loop in process!",thread_id);
         return false;
     }
+
+
+int Encoder::SetInputBuffer(RingQueue<YUVFrame> *yuvBuffer) {
+    mYuvBuffer = yuvBuffer;
+    return 0;
 }
 
-};
+int Encoder::SetOutputBuffer(RingQueue<H264Frame> *h264Buffer) {
+    mH264Buffer = h264Buffer;
+    return 0;
+} ;
+
+}
+

@@ -36,8 +36,8 @@ namespace LibTranscode {
 
     private:
         Init *init = NULL;
-        RingQueue<YUVFrame> *mDecodeRingBuffer = NULL;
-        RingQueue<H264Frame> *mEncodeRingBuffer = NULL;
+        RingQueue<YUVFrame> *mDecodeBuffer = NULL;
+        RingQueue<H264Frame> *mEncodeBuffer = NULL;
         Decoder *mDecoder;
         Encoder *mEncoder;
     };

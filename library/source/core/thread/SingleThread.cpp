@@ -8,8 +8,6 @@
 #include "SingleThread.h"
 
 
-namespace LibTranscode {
-
 SingleThread::SingleThread(int id): running_(false), proc_(NULL), id_(id) {
 }
 
@@ -109,10 +107,4 @@ void* SingleThread::thread_func(void* param) {
     obj->process();
 
     return NULL;
-}
-
-
-
-
-
 }

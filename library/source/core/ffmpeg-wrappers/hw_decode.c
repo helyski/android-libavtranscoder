@@ -8,11 +8,30 @@
 
 AVBufferRef *hw_device_ctx = NULL;
 enum AVPixelFormat hw_pix_fmt;
+char is_stop = 0;
+enum DecodeState decode_state = DECODE_NOT_START;
+
+
+// For test.
 FILE *output_file = NULL;
+
+
+// For test.
 int write_head_yuv = 0;
 
+enum DecodeState get_decode_state(){
 
-int start_hwdecode() {
+    return decode_state;
+}
+
+int stop_hw_decode(){
+    is_stop = 1;
+    return 0;
+}
+
+int start_hw_decode() {
+    is_stop = 0;
+    decode_state = DECODING;
 
     AVFormatContext *input_ctx = NULL;
     int video_stream, ret;
@@ -142,6 +161,10 @@ int start_hwdecode() {
     output_file = fopen(output_file_name,"wb+");
 
     while(ret>=0){
+        LOGW("decodeYUV is_stop:%d.....",is_stop);
+        if(is_stop){
+            break;
+        }
         LOGW("decodeYUV start read H264 frame.....");
         if ((ret = av_read_frame(input_ctx, &packet)) < 0) {
             LOGW("decodeYUV finish_ERROR read H264 frame.....#");
@@ -169,6 +192,7 @@ int start_hwdecode() {
     av_buffer_unref(&hw_device_ctx);
 
 
+    decode_state = DECODE_FINISH;
     return 0;
 
 }
