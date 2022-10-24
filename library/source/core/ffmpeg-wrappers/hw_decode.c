@@ -22,7 +22,7 @@ FILE *output_file = NULL;
 int write_head_yuv = 0;
 
 #if 1
-const char * output_file_name = "/sdcard/mapgoologcat/hello.yuv";
+const char * output_file_name = "/sdcard/VideosForLibtranscode/hello.yuv";
 #endif
 
 enum DecodeState get_decode_state(){
@@ -48,15 +48,7 @@ int start_hw_decode(const char* input_file_path,float seek_seconds) {
     enum AVHWDeviceType type;
     int i;
 
-    /**
-     * VideoInfo and AudioInfo
-     */
 
-    videoInfo = (VideoInfo*)malloc(sizeof (VideoInfo));
-    memset(videoInfo,0,sizeof(VideoInfo));
-
-    audioInfo = (AudioInfo*)malloc(sizeof (AudioInfo));
-    memset(audioInfo,0,sizeof (AudioInfo));
 
     /**
      * Find a hw device , Android mostly is mediacodec.If can not find hw device,process will exit.
@@ -72,17 +64,25 @@ int start_hw_decode(const char* input_file_path,float seek_seconds) {
         while((type = av_hwdevice_iterate_types(type)) != AV_HWDEVICE_TYPE_NONE) {
             LOGW("%s :: hw_device:",TAG,av_hwdevice_get_type_name(type));
         }
-        goto end;
+        return -1;
     }
 
     /**
-     * Open input file, AVFormatContext will be init.
+     * Open input file, if open success AVFormatContext will be init.
      */
     if(avformat_open_input(&input_ctx,input_file_path,NULL,NULL) !=0){
         LOGW("%s :: avformat_open_input can not open input file '%s'",TAG,input_file_path);
-        goto end;
+        return -1;
     }
     LOGW("%s :: avformat_open_input success!",TAG);
+
+    /**
+     * VideoInfo and AudioInfo
+     */
+    videoInfo = (VideoInfo*)malloc(sizeof (VideoInfo));
+    memset(videoInfo,0,sizeof(VideoInfo));
+    audioInfo = (AudioInfo*)malloc(sizeof (AudioInfo));
+    memset(audioInfo,0,sizeof (AudioInfo));
 
     /**
      * Find Stream Info,Get Video Info from video stream and audio stream.
@@ -193,14 +193,22 @@ int start_hw_decode(const char* input_file_path,float seek_seconds) {
     end:
     packet.data = NULL;
     packet.size = 0;
-    ret = decode_write(decoder_ctx, &packet);
-    av_packet_unref(&packet);
+    // TODO need to fix this,av_packet_unref will crash in google nexus5 android11.
+//    ret = decode_write(decoder_ctx, &packet);
+//    av_packet_unref(&packet);
 
     if (output_file)
         fclose(output_file);
-    avcodec_free_context(&decoder_ctx);
-    avformat_close_input(&input_ctx);
-    av_buffer_unref(&hw_device_ctx);
+
+    if(decoder_ctx) {
+        avcodec_free_context(&decoder_ctx);
+    }
+    if(input_ctx) {
+        avformat_close_input(&input_ctx);
+    }
+    if(hw_device_ctx) {
+        av_buffer_unref(&hw_device_ctx);
+    }
 
     if(videoInfo){
         free(videoInfo);

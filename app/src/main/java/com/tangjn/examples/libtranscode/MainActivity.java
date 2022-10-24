@@ -1,5 +1,4 @@
 package com.tangjn.examples.libtranscode;
-import android.annotation.SuppressLint;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
@@ -17,7 +16,7 @@ public class MainActivity extends AppCompatActivity  implements View.OnClickList
      */
     private static final String OutputDir = "/storage/Tfcard/TranscodeStore";
 
-    private static final String SrcFilePath = "/storage/sdcard0/DVR/front/loop/00_20220819125342.ts";
+    private static final String SrcFilePath = "/sdcard/VideosForLibtranscode/00_20221024112518.ts";
 
 
     Runnable hwdecode = new Runnable() {
@@ -43,7 +42,7 @@ public class MainActivity extends AppCompatActivity  implements View.OnClickList
         setContentView(R.layout.activity_main);
 
         findViewById(R.id.btnStartTranscode).setOnClickListener(this);
-        findViewById(R.id.btn_testFilter).setOnClickListener(this);
+        findViewById(R.id.btnStopTranscode).setOnClickListener(this);
 
         JNILibTranscode.Init();
 //        JNILibTranscode.OpenFFmpegLog();
@@ -56,14 +55,15 @@ public class MainActivity extends AppCompatActivity  implements View.OnClickList
     @Override
     protected void onResume() {
         super.onResume();
-//        PermissionManager.checkGrantPermission(this,getApplicationContext(),true);
+        Log.e(TAG,"onResume");
+        PermissionManager.checkGrantPermission(this,getApplicationContext(),true);
 
     }
 
     @Override
     public void onClick(View view) {
         switch (view.getId()){
-            case R.id.btn_testFilter:
+            case R.id.btnStopTranscode:
                 Log.e(TAG,"FFFFFFFFFFFFFFFFFFFFFFFFFF");
 ////                VideoFactory.testFilter();
 //                String newFileName = String.format(Locale.CHINA,"transcode%d_%s",System.currentTimeMillis(),
