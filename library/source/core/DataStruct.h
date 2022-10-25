@@ -58,4 +58,8 @@ struct _AudioInfo {
     int64_t durationus;
 };
 
+
+typedef struct _VideoInfo VideoInfo;
+typedef struct _AudioInfo AudioInfo;
+
 #endif //ANDROID_LIBTRANSCODE_DATASTRUCT_H

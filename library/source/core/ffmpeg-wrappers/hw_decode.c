@@ -93,6 +93,31 @@ int start_hw_decode(const char* input_file_path,float seek_seconds) {
     }
     LOGW("%s :: avformat_find_stream_info success!",TAG);
 
+    /**
+     * FIXME only for debug
+     */
+    _4_debugger_show_stream_info(input_ctx,TAG);
+
+    get_decode_info_from_input(input_ctx,videoInfo,audioInfo);
+
+    if(videoInfo){
+        LOGW("%s :: videoInfo fps=%d",TAG,videoInfo->fps);
+        LOGW("%s :: videoInfo bitrate=%d",TAG,videoInfo->bitrate);
+        LOGW("%s :: videoInfo width=%d",TAG,videoInfo->width);
+        LOGW("%s :: videoInfo height=%d",TAG,videoInfo->height);
+
+        int k;
+        for (k = 0; k < videoInfo->decode_info_len; k++) {
+            LOGW("%s :: decode_info [%d]:  %X",TAG, k, videoInfo->decode_info[k]);
+        }
+    }
+    /**
+     * Get video and audio codec info from AVFormatContext,AVStream,AVCodecContext.
+     *
+     */
+//     get_decode_info_from_input(input_ctx,&videoInfo,&audioInfo);
+
+
     ret = av_find_best_stream(input_ctx, AVMEDIA_TYPE_VIDEO, -1, -1, NULL, 0);
     LOGW("%s :: avformat_find_stream_info video_bitrate:%lld, width:%d, height:%d",TAG,
          input_ctx->bit_rate,input_ctx->streams[ret]->codecpar->width, input_ctx->streams[ret]->codecpar->height);
@@ -101,6 +126,8 @@ int start_hw_decode(const char* input_file_path,float seek_seconds) {
         goto end;
     }
     video_stream = ret;
+
+//    _4_debugger_show_stream_info(input_ctx,TAG);
 
     /**
      * Find decoder.
@@ -130,7 +157,7 @@ int start_hw_decode(const char* input_file_path,float seek_seconds) {
 
     LOGW("hw_pix_fmt = %d",hw_pix_fmt);
 
-    int64_t jump_seconds = 10;
+    int64_t jump_seconds = 0;
 
     int seek_result = av_seek_frame(input_ctx,video_stream,jump_seconds/av_q2d(input_ctx->streams[video_stream]->time_base),AVSEEK_FLAG_FRAME);
 
@@ -187,6 +214,8 @@ int start_hw_decode(const char* input_file_path,float seek_seconds) {
         if (video_stream == packet.stream_index)
             ret = decode_write(decoder_ctx, &packet);
 
+        LOGW("decodeYUV decode result -> %d",ret);
+
         av_packet_unref(&packet);
     }
 
@@ -211,11 +240,17 @@ int start_hw_decode(const char* input_file_path,float seek_seconds) {
     }
 
     if(videoInfo){
+        if(videoInfo->decode_info){
+            free(videoInfo->decode_info);
+        }
         free(videoInfo);
         videoInfo = NULL;
     }
 
     if(audioInfo){
+        if(audioInfo->decode_info){
+            free(audioInfo->decode_info);
+        }
         free(audioInfo);
         audioInfo = NULL;
     }
@@ -276,6 +311,7 @@ int decode_write(AVCodecContext *avctx, AVPacket *packet) {
 
         ret = avcodec_receive_frame(avctx, frame);
         if (ret == AVERROR(EAGAIN) || ret == AVERROR_EOF) {
+            LOGW("avcodec_receive_frame erro !!!!!!!!!!!\n");
             av_frame_free(&frame);
             av_frame_free(&sw_frame);
             return 0;

@@ -18,9 +18,10 @@
 
 #include "debug.h"
 #include "DataStruct.h"
+#include "decode_tool.h"
+#include "filetool.h"
 
-typedef struct _VideoInfo VideoInfo;
-typedef struct _AudioInfo AudioInfo;
+
 
 enum DecodeState{
     DECODE_NOT_START = 0,
