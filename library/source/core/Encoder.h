@@ -11,11 +11,12 @@
 #include "RingQueue.h"
 #include "DataStruct.h"
 
+
 extern "C"
 {
 
 
-
+#include "filetool.h"
 
     class Encoder : public SingleThread::ThreadProc{
     public:

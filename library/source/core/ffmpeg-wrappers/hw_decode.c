@@ -17,6 +17,14 @@ AudioInfo *audioInfo;
 // For test.
 FILE *output_file = NULL;
 
+AVFormatContext *input_ctx = NULL;
+AVStream *video = NULL;
+AVCodecContext *decoder_ctx = NULL;
+AVCodec *decoder = NULL;
+AVPacket packet;
+enum AVHWDeviceType type;
+int video_stream;
+
 
 // For test.
 int write_head_yuv = 0;
@@ -35,17 +43,61 @@ int stop_hw_decode(){
     return 0;
 }
 
-int start_hw_decode(const char* input_file_path,float seek_seconds) {
+int start_hw_decode(const char* input_file_path,float seek_seconds){
+    return 0;
+}
+
+
+int release_decoder_ctx(){
+
+    end:
+    packet.data = NULL;
+    packet.size = 0;
+    // TODO need to fix this,av_packet_unref will crash in google nexus5 android11.
+//    ret = decode_write(decoder_ctx, &packet);
+//    av_packet_unref(&packet);
+
+    if (output_file)
+        fclose(output_file);
+
+    if(decoder_ctx) {
+        avcodec_free_context(&decoder_ctx);
+    }
+    if(input_ctx) {
+        avformat_close_input(&input_ctx);
+    }
+    if(hw_device_ctx) {
+        av_buffer_unref(&hw_device_ctx);
+    }
+
+    if(videoInfo){
+        if(videoInfo->decode_info){
+            free(videoInfo->decode_info);
+        }
+        free(videoInfo);
+        videoInfo = NULL;
+    }
+
+    if(audioInfo){
+        if(audioInfo->decode_info){
+            free(audioInfo->decode_info);
+        }
+        free(audioInfo);
+        audioInfo = NULL;
+    }
+
+    decode_state = DECODE_FINISH;
+
+    return 0;
+}
+
+
+int init_decoder_ctx(const char* input_file_path,float seek_seconds) {
     is_stop = 0;
     decode_state = DECODING;
 
-    int video_stream, ret;
-    AVFormatContext *input_ctx = NULL;
-    AVStream *video = NULL;
-    AVCodecContext *decoder_ctx = NULL;
-    AVCodec *decoder = NULL;
-    AVPacket packet;
-    enum AVHWDeviceType type;
+    int ret;
+
     int i;
 
 
@@ -194,68 +246,7 @@ int start_hw_decode(const char* input_file_path,float seek_seconds) {
     }
 
     LOGW("avcodec_open2 success !");
-
-    remove(output_file_name);
-    output_file = fopen(output_file_name,"wb+");
-
-    while(ret>=0){
-        LOGW("decodeYUV is_stop:%d.....",is_stop);
-        if(is_stop){
-            break;
-        }
-        LOGW("decodeYUV start read H264 frame.....");
-        if ((ret = av_read_frame(input_ctx, &packet)) < 0) {
-            LOGW("decodeYUV finish_ERROR read H264 frame.....#");
-            break;
-        }
-
-        LOGW("decodeYUV finish_SUCCESS read H264 frame.....#");
-
-        if (video_stream == packet.stream_index)
-            ret = decode_write(decoder_ctx, &packet);
-
-        LOGW("decodeYUV decode result -> %d",ret);
-
-        av_packet_unref(&packet);
-    }
-
     end:
-    packet.data = NULL;
-    packet.size = 0;
-    // TODO need to fix this,av_packet_unref will crash in google nexus5 android11.
-//    ret = decode_write(decoder_ctx, &packet);
-//    av_packet_unref(&packet);
-
-    if (output_file)
-        fclose(output_file);
-
-    if(decoder_ctx) {
-        avcodec_free_context(&decoder_ctx);
-    }
-    if(input_ctx) {
-        avformat_close_input(&input_ctx);
-    }
-    if(hw_device_ctx) {
-        av_buffer_unref(&hw_device_ctx);
-    }
-
-    if(videoInfo){
-        if(videoInfo->decode_info){
-            free(videoInfo->decode_info);
-        }
-        free(videoInfo);
-        videoInfo = NULL;
-    }
-
-    if(audioInfo){
-        if(audioInfo->decode_info){
-            free(audioInfo->decode_info);
-        }
-        free(audioInfo);
-        audioInfo = NULL;
-    }
-
-    decode_state = DECODE_FINISH;
     return 0;
 
 }
@@ -287,7 +278,9 @@ int hw_decoder_init(AVCodecContext *ctx, const enum AVHWDeviceType type) {
     return err;
 }
 
-int decode_write(AVCodecContext *avctx, AVPacket *packet) {
+int decode_frames = 0;
+
+int decode(AVCodecContext *avctx, AVPacket *packet,unsigned char **output_buffer,int* buffer_size) {
     AVFrame *frame = NULL, *sw_frame = NULL;
     AVFrame *tmp_frame = NULL;
     uint8_t *buffer = NULL;
@@ -314,13 +307,13 @@ int decode_write(AVCodecContext *avctx, AVPacket *packet) {
             LOGW("avcodec_receive_frame erro !!!!!!!!!!!\n");
             av_frame_free(&frame);
             av_frame_free(&sw_frame);
-            return 0;
+            return REC_END;
         } else if (ret < 0) {
             LOGW("Error while decoding\n");
             goto fail;
         }
 
-        LOGW("receive video frame success: pts=%lld",frame->pts);
+        LOGW("receive video frame success: pts=%lld , frame_counts:%d",frame->pts,++decode_frames);
 
         if (frame->format == hw_pix_fmt) {
             if ((ret = av_hwframe_transfer_data(sw_frame, frame, 0)) < 0) {
@@ -351,16 +344,16 @@ int decode_write(AVCodecContext *avctx, AVPacket *packet) {
             goto fail;
         }
 
-//        if ((ret = fwrite(buffer, 1, size, output_file)) < 0) {
-//            LOGW("Failed to dump raw data.\n");
-//            goto fail;
-//        }
-
-        if(!write_head_yuv){
-            fwrite(buffer, 1, size, output_file);
-            fclose(output_file);
-            write_head_yuv = 1;
+        if(*output_buffer){
+            free(*output_buffer);
         }
+        *output_buffer = malloc(size);
+        if(!*output_buffer){
+            goto fail;
+        }
+
+        *buffer_size = size;
+        memcpy(*output_buffer,buffer,size);
 
         fail:
         av_frame_free(&frame);
@@ -371,11 +364,52 @@ int decode_write(AVCodecContext *avctx, AVPacket *packet) {
     }
 }
 
+int get_frame(unsigned char **output_buffer,int* buffer_size){
 
-VideoInfo* getVideoInfo(){
+    int ret = 0;
+    int is_get_frame = 0;
+    do{
+        LOGW("decodeYUV is_stop:%d.....",is_stop);
+        if(is_stop){
+            break;
+        }
+        LOGW("decodeYUV start read H264 frame.....");
+        if ((ret = av_read_frame(input_ctx, &packet)) < 0) {
+            LOGW("decodeYUV finish_ERROR read H264 frame.....#");
+            return DEC_INPUT_END_ERR;
+//            break;
+        }
+
+        LOGW("decodeYUV finish_SUCCESS read H264 frame.....#, index=%d",packet.stream_index);
+        if(video_stream != packet.stream_index){
+            continue;
+        }
+
+        if (video_stream == packet.stream_index)
+            ret = decode(decoder_ctx, &packet,output_buffer,buffer_size);
+
+        if(ret == REC_END){
+            is_get_frame = 1;
+        }
+
+        LOGW("decodeYUV decode result -> %d",ret);
+
+        av_packet_unref(&packet);
+
+//        usleep(50000);
+
+    }while(is_get_frame==0);
+
+    LOGW("get_frame finish end");
+    return 0;
+}
+
+
+
+VideoInfo* get_video_info(){
     return videoInfo;
 }
 
-AudioInfo* getAudioInfo(){
+AudioInfo* get_audio_info(){
     return audioInfo;
 }

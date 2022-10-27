@@ -9,6 +9,7 @@
 #include <SingleThread.h>
 #include "DataStruct.h"
 #include "RingQueue.h"
+#include "timetool.h"
 
 extern "C"
 {
@@ -31,6 +32,7 @@ public:
 
 private:
     bool process(int thread_id, void *env);
+    static int GetFrameMaxHandleTimeMS(int fps);
 
 private:
     SingleThread mThread;

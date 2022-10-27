@@ -42,13 +42,25 @@ extern "C"
     }
 
     bool Encoder::process(int thread_id, void *env) {
+        const char* path = "/sdcard/videos/encoder/123.yuv";
+        FILE * file = 0;
+
+        file = open_file_c(path);
+
         LOGW("Encoder_tid%d::start loop in process!",thread_id);
         int temp = 0;
         while(!mExit){
-            usleep(1000000);
+            usleep(50000);
             LOGW("Encoder_tid%d::%d!",thread_id,temp++);
             // TODO encode here
 //            break;
+            if(mYuvBuffer){
+                YUVFrame frame = mYuvBuffer->getHeadElement();
+                LOGW("Encoder_tid%d::yuv len",thread_id,frame.yuvlen);
+                if(file){
+                    fwrite(frame.yuv,1,frame.yuvlen,file);
+                }
+            }
         }
         LOGW("Encoder_tid%d::exit loop in process!",thread_id);
         return false;
