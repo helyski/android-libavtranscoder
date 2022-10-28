@@ -44,23 +44,78 @@ extern "C"
     bool Encoder::process(int thread_id, void *env) {
         const char* path = "/sdcard/videos/encoder/123.yuv";
         FILE * file = 0;
+        int yuv_index = 0;
+        unsigned long long last_frame_time = 0;
 
         file = open_file_c(path);
+
+        unsigned long long wait_lock_start_time;
+        unsigned long long wait_lock_finish_time;
+
+        unsigned long long write_start_time;
+        unsigned long long write_finish_time;
+
+        unsigned long long cpy_finish_time;
+
+        void* yuv=0;
+        int len=0;
 
         LOGW("Encoder_tid%d::start loop in process!",thread_id);
         int temp = 0;
         while(!mExit){
-            usleep(50000);
             LOGW("Encoder_tid%d::%d!",thread_id,temp++);
             // TODO encode here
 //            break;
-            if(mYuvBuffer){
-                YUVFrame frame = mYuvBuffer->getHeadElement();
-                LOGW("Encoder_tid%d::yuv len",thread_id,frame.yuvlen);
-                if(file){
-                    fwrite(frame.yuv,1,frame.yuvlen,file);
+            {
+                wait_lock_start_time = get_system_current_time_millis();
+                LOGW("Encoder wait_lock_start_time:%lld",wait_lock_start_time);
+                AutoLock lock(mYuvBuffer->GetLock());
+                wait_lock_finish_time = get_system_current_time_millis();
+                LOGW("Encoder wait_lock_finish_time:%lld, wait_lock_time:%lld",wait_lock_finish_time,wait_lock_finish_time - wait_lock_start_time);
+
+                if (mYuvBuffer) {
+                    YUVFrame frame = mYuvBuffer->getHeadElement();
+                    LOGW("Encoder_tid%d::get YUV index:%d", thread_id, frame.index);
+                    if (frame.index > yuv_index) {
+                        yuv_index = frame.index;
+                        last_frame_time = get_system_current_time_millis();
+                        len = frame.yuvlen;
+                        if(!yuv){
+                            yuv = malloc(len);
+                        }
+                        memcpy(yuv,frame.yuv,len);
+                    }else{
+                        len = 0;
+                    }
                 }
+                cpy_finish_time = get_system_current_time_millis();
+                LOGW("Encoder getHeadElement and CPY finish at:%lld, use_time:%lld",cpy_finish_time,cpy_finish_time - wait_lock_finish_time);
+
             }
+            // FIXME DEBUG ONLY
+            // Write a 1280x720 size yuv to file may spend a hundred milliseconds.
+            // So 2 things should be noticed:
+            //      1. Write YUV to file is a time-consuming operation.
+            //      2. RingQueue lock use in this Encoder may cause Decoder has a low efficiency.
+            if (file && len>0 && yuv) {
+                write_start_time = get_system_current_time_millis();
+                fwrite(yuv, 1, len, file);
+                write_finish_time = get_system_current_time_millis();
+                LOGW("Encoder write_use_time:%lld",write_finish_time-write_start_time);
+            }
+            usleep(10000);
+
+            if(get_system_current_time_millis() - last_frame_time > 3000 && last_frame_time>0){
+                break;
+            }
+        }
+
+        if(file){
+            fclose(file);
+        }
+        if(yuv){
+            free(yuv);
+            yuv = NULL;
         }
         LOGW("Encoder_tid%d::exit loop in process!",thread_id);
         return false;

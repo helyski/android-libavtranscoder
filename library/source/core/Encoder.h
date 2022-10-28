@@ -10,6 +10,7 @@
 #include "debug.h"
 #include "RingQueue.h"
 #include "DataStruct.h"
+#include "timetool.h"
 
 
 extern "C"

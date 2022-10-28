@@ -25,6 +25,7 @@ struct YUVFrame {
     int format_type;        //YUV颜色格式
     long long duration;
     unsigned long long start_time;  //帧系统时间
+    int index;
 };
 
 struct H264Frame{
