@@ -31,6 +31,7 @@ include_directories(
         ${CMAKE_SOURCE_DIR}/source/ffmpeg/include/libavutil
         ${CMAKE_SOURCE_DIR}/source/core/ffmpeg-wrappers
         ${CMAKE_SOURCE_DIR}/source/core/thread
+        ${CMAKE_SOURCE_DIR}/source/core/android
 )
 
 # 设置源文件，单个文件用set，多个文件可以使用file
@@ -38,6 +39,7 @@ set(main_src transcode_jni.cpp)
 file (GLOB_RECURSE core_src "core/*.c*" )
 file (GLOB_RECURSE tool_src "tools/*.c*" )
 file (GLOB_RECURSE ffmpeg_wrapper_src "core/ffmpeg-wrappers/*.c*" )
+file (GLOB_RECURSE mediacodec_wrapper_src "core/android/*.c*" )
 
 
 add_library( # Sets the name of the library.
