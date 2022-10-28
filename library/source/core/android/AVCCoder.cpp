@@ -7,7 +7,7 @@
 #include <tool.h>
 #include "AVCCoder.h"
 
-namespace mgvideo {
+
     CAVCCoder::CAVCCoder(){
         mOpened = false;
         mWidth = 0;
@@ -126,7 +126,7 @@ namespace mgvideo {
         if (!env){
             return mOpened;
         }
-
+        LOGE("CAVCCoder::OpenCodec 22222222");
         mAVCCoder = init_omx_codec_context();
         if(NULL == mAVCCoder){
             LOGE(" %s 初始化H264硬编码器失败",__FUNCTION__);
@@ -135,7 +135,7 @@ namespace mgvideo {
 
         omx_switch_uv(mAVCCoder,mSwitchUV);
 
-
+        LOGE("CAVCCoder::OpenCodec 333333333");
         if(VIDEO_CODEC_TYPE_H264 == mVideoCodecType)
             strcpy(codecTypeStr,"video/avc");
         if(VIDEO_CODEC_TYPE_H265 == mVideoCodecType)
@@ -143,7 +143,7 @@ namespace mgvideo {
         if(VIDEO_CODEC_TYPE_MPEG4 == mVideoCodecType)
             strcpy(codecTypeStr,"video/mp4v-es");
         if (!omx_open_video_codec(env, mAVCCoder,mWidth,mHeight,mFrameRate,mBitrate,mVarVideoBR,codecTypeStr)){
-            LOGE(" %s 打开H264硬编码器失败",__FUNCTION__);
+            LOGE("CAVCCoder::OpenCodec %s 打开H264硬编码器失败",__FUNCTION__);
             uninit_omx_codec_context(mAVCCoder);
             goto end;
         }
@@ -224,16 +224,19 @@ end:
     }
 
     bool CAVCCoder::Encode(JNIEnv *env,const unsigned char *Data,int Len){
+        LOGE("CAVCCoder::Encode 22222222 is open:%d",mOpened);
         if(!mOpened)
             return false;
-
+        LOGE("CAVCCoder::Encode 333333333");
         if( NULL == env)
             return false;
+        LOGE("CAVCCoder::Encode 4444444");
         if( NULL == Data || Len <= 0 )
             return false;
 
+        LOGE("CAVCCoder::Encode 555555555");
         if (!omx_encode(env,mAVCCoder,Data,Len,-1)){
-            LOGW(" %s 编码YUV数据失败",__FUNCTION__);
+            LOGW("CAVCCoder::Encode %s 编码YUV数据失败",__FUNCTION__);
             return false;
         }
 
@@ -261,4 +264,3 @@ end:
     bool CAVCCoder::isOpened(){
         return mOpened;
     }
-}

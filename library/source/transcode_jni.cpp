@@ -7,6 +7,7 @@
 #include "android/log.h"
 #include "Init.h"
 #include "Processor.h"
+#include "hvjava.h"
 
 using namespace LibTranscode;
 
@@ -161,6 +162,8 @@ JNIEXPORT jint JNICALL  JNI_OnLoad(JavaVM* vm, void* reserved) {
     int result = -1;
 
     g_vm = vm;
+
+    hv_set_jvm(vm);
 
     if (vm->GetEnv((void**) &env, JNI_VERSION_1_6) != JNI_OK) {
         return -1;

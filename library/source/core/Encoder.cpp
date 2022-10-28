@@ -62,6 +62,29 @@ extern "C"
 
         LOGW("Encoder_tid%d::start loop in process!",thread_id);
         int temp = 0;
+
+
+        avcCoder.SetWidth(1280);
+        avcCoder.SetHeight(720);
+        avcCoder.SetBitrate(3000000,false);
+        avcCoder.SetFrameRate(15);
+        avcCoder.SetVideoCodecType(VIDEO_CODEC_TYPE_H264);
+        avcCoder.SwitchUV(true);
+
+        avcCoder.OpenCodec();
+
+        int nead_detach = 0;
+        JNIEnv *mEnv = hv_get_jni_env(&nead_detach);
+        if (!mEnv){
+            return false;
+        }
+
+        bool encode_stat = false;
+        bool bGetOneNal = false;
+        unsigned char *pH264 = NULL;
+        int iH264Len = 0;
+        int64_t Timestamp;
+
         while(!mExit){
             LOGW("Encoder_tid%d::%d!",thread_id,temp++);
             // TODO encode here
@@ -84,6 +107,15 @@ extern "C"
                             yuv = malloc(len);
                         }
                         memcpy(yuv,frame.yuv,len);
+
+                        encode_stat = avcCoder.Encode(mEnv,(const unsigned char*)yuv,len);
+
+                        LOGW("Encoder :: encode stat:%d", encode_stat);
+                        bGetOneNal = avcCoder.GetFrame((JNIEnv *) env, &pH264, &iH264Len, &Timestamp);
+
+                        if(bGetOneNal && pH264 && iH264Len >0){
+                            LOGW("Encoder :: GetFrame ret:%d, h264_size:%d", bGetOneNal,len);
+                        }
                     }else{
                         len = 0;
                     }
@@ -97,12 +129,12 @@ extern "C"
             // So 2 things should be noticed:
             //      1. Write YUV to file is a time-consuming operation.
             //      2. RingQueue lock use in this Encoder may cause Decoder has a low efficiency.
-            if (file && len>0 && yuv) {
-                write_start_time = get_system_current_time_millis();
-                fwrite(yuv, 1, len, file);
-                write_finish_time = get_system_current_time_millis();
-                LOGW("Encoder write_use_time:%lld",write_finish_time-write_start_time);
-            }
+//            if (file && len>0 && yuv) {
+//                write_start_time = get_system_current_time_millis();
+//                fwrite(yuv, 1, len, file);
+//                write_finish_time = get_system_current_time_millis();
+//                LOGW("Encoder write_use_time:%lld",write_finish_time-write_start_time);
+//            }
             usleep(10000);
 
             if(get_system_current_time_millis() - last_frame_time > 3000 && last_frame_time>0){

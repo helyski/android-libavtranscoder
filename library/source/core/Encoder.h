@@ -11,7 +11,8 @@
 #include "RingQueue.h"
 #include "DataStruct.h"
 #include "timetool.h"
-
+#include "AVCCoder.h"
+#include "hvjava.h"
 
 extern "C"
 {
@@ -47,6 +48,8 @@ extern "C"
 
         RingQueue<YUVFrame>  *mYuvBuffer;
         RingQueue<H264Frame> *mH264Buffer;
+
+        CAVCCoder avcCoder;
 
     };
 

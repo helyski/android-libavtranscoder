@@ -1080,7 +1080,7 @@ bool media_codec_encode(JNIEnv *env,media_codec_context* context,const unsigned 
 
 	if (index < 0)
 	{
-		LOGW("media_codec_encode index小于0 ");
+		LOGW("media_codec_encode index小于0 index:%d",index);
 		return ret;
 	}
 

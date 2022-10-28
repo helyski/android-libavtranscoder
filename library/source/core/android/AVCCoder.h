@@ -13,7 +13,6 @@ enum{
     VIDEO_CODEC_TYPE_H265 = 2       //h265
 };
 
-namespace mgvideo {
     class CAVCCoder{
     public:
         CAVCCoder();
@@ -70,7 +69,7 @@ namespace mgvideo {
         bool mSwitchUV;
         int mVideoCodecType;    //视频编码类型
     };
-}
+
 
 
 #endif //MGMEDIAENGINE_AVCCODER_H
