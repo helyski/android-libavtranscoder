@@ -245,16 +245,21 @@ end:
 
     bool CAVCCoder::GetFrame(JNIEnv *env,unsigned char** Output,int* OutputLen,int64_t* outTimestamp){
         bool ret = false;
+        LOGW("omx_get_encoded_frame GetFrame 111");
         if(!mOpened)
             return ret;
-
+        LOGW("omx_get_encoded_frame GetFrame 2222");
         if( NULL == env)
             return ret;
+
+        LOGW("omx_get_encoded_frame GetFrame 333");
         if( NULL == Output || NULL == OutputLen )
             return ret;
 
+        LOGW("omx_get_encoded_frame GetFrame 444");
         *OutputLen = 0;
         ret = omx_get_encoded_frame(env,mAVCCoder,Output,OutputLen,outTimestamp);
+        LOGW("omx_get_encoded_frame len:%lld,timestamp:%lld",OutputLen,outTimestamp);
         if(!ret || *OutputLen <= 0)
             return false;
 

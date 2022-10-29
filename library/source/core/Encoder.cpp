@@ -79,11 +79,7 @@ extern "C"
             return false;
         }
 
-        bool encode_stat = false;
-        bool bGetOneNal = false;
-        unsigned char *pH264 = NULL;
-        int iH264Len = 0;
-        int64_t Timestamp;
+
 
         while(!mExit){
             LOGW("Encoder_tid%d::%d!",thread_id,temp++);
@@ -103,18 +99,38 @@ extern "C"
                         yuv_index = frame.index;
                         last_frame_time = get_system_current_time_millis();
                         len = frame.yuvlen;
-                        if(!yuv){
-                            yuv = malloc(len);
-                        }
-                        memcpy(yuv,frame.yuv,len);
+//                        if(!yuv){
+//                            yuv = malloc(len);
+//                        }
+//                        memcpy(yuv,frame.yuv,len);
+                        yuv = frame.yuv;
 
-                        encode_stat = avcCoder.Encode(mEnv,(const unsigned char*)yuv,len);
+                        if(yuv && len >0) {
 
-                        LOGW("Encoder :: encode stat:%d", encode_stat);
-                        bGetOneNal = avcCoder.GetFrame((JNIEnv *) env, &pH264, &iH264Len, &Timestamp);
+                            bool encode_stat = false;
+                            encode_stat = avcCoder.Encode(mEnv, (const unsigned char *) yuv, len);
 
-                        if(bGetOneNal && pH264 && iH264Len >0){
-                            LOGW("Encoder :: GetFrame ret:%d, h264_size:%d", bGetOneNal,len);
+                            LOGW("Encoder :: encode stat:%d", encode_stat);
+
+
+                            bool bGetOneNal = false;
+                            unsigned char *pH264 = NULL;
+                            int iH264Len = 0;
+                            int64_t Timestamp;
+
+                            while (1) {
+                                bGetOneNal = avcCoder.GetFrame(mEnv, &pH264, &iH264Len,
+                                                               &Timestamp);
+
+                                LOGW("Encoder :: GetFrame len:%d,timestamp:%llu", iH264Len, Timestamp);
+
+                                if (bGetOneNal && pH264 && iH264Len > 0) {
+                                    LOGW("Encoder :: GetFrame ret:%d, h264_size:%d", bGetOneNal, len);
+                                    break;
+                                }
+
+                                usleep(5000);
+                            }
                         }
                     }else{
                         len = 0;

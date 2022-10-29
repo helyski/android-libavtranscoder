@@ -28,7 +28,6 @@ include_directories(
         ${CMAKE_SOURCE_DIR}/source/core
         ${CMAKE_SOURCE_DIR}/source/tools
         ${CMAKE_SOURCE_DIR}/source/ffmpeg/include
-        ${CMAKE_SOURCE_DIR}/source/ffmpeg/include/libavutil
         ${CMAKE_SOURCE_DIR}/source/core/ffmpeg-wrappers
         ${CMAKE_SOURCE_DIR}/source/core/thread
         ${CMAKE_SOURCE_DIR}/source/core/android
