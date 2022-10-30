@@ -31,6 +31,7 @@ include_directories(
         ${CMAKE_SOURCE_DIR}/source/core/ffmpeg-wrappers
         ${CMAKE_SOURCE_DIR}/source/core/thread
         ${CMAKE_SOURCE_DIR}/source/core/android
+        ${CMAKE_SOURCE_DIR}/source/libyuvmaster
 )
 
 # 设置源文件，单个文件用set，多个文件可以使用file
@@ -65,6 +66,7 @@ find_library( # Sets the name of the path variable.
 # 加第三方动态库
 add_library(libffmpeg SHARED IMPORTED)
 add_library(libx265 SHARED IMPORTED)
+add_library(libyuv SHARED IMPORTED)
 
 # 根据架构选择对应的动态库文件
 if(${ANDROID_ABI} STREQUAL "armeabi-v7a")
@@ -77,6 +79,11 @@ if(${ANDROID_ABI} STREQUAL "armeabi-v7a")
             libx265
             PROPERTIES IMPORTED_LOCATION
             ${CMAKE_SOURCE_DIR}/../app/libs/armeabi-v7a/libx265.so
+    )
+    set_target_properties(
+            libyuv
+            PROPERTIES IMPORTED_LOCATION
+            ${CMAKE_SOURCE_DIR}/../app/libs/armeabi-v7a/libyuv.so
     )
 endif(${ANDROID_ABI} STREQUAL "armeabi-v7a")
 
@@ -91,12 +98,18 @@ if(${ANDROID_ABI} STREQUAL "arm64-v8a")
             PROPERTIES IMPORTED_LOCATION
             ${CMAKE_SOURCE_DIR}/../app/libs/arm64-v8a/libx265.so
     )
+    set_target_properties(
+            libyuv
+            PROPERTIES IMPORTED_LOCATION
+            ${CMAKE_SOURCE_DIR}/../app/libs/arm64-v8a/libyuv.so
+    )
 endif(${ANDROID_ABI} STREQUAL "arm64-v8a")
 
 # 设置目标库链接的第三方静态库
 
 target_link_libraries(avtranscoder libffmpeg)
 target_link_libraries(avtranscoder libx265)
+target_link_libraries(avtranscoder libyuv)
 target_link_libraries(avtranscoder jnigraphics)
 target_link_libraries(avtranscoder OpenSLES)
 target_link_libraries(avtranscoder ${log-lib})

@@ -2,6 +2,9 @@
 // Created by Tank on 2022/10/9.
 //
 #include "Encoder.h"
+#include "libyuv.h"
+
+using namespace libyuv;
 extern "C"
 {
 
@@ -69,7 +72,7 @@ extern "C"
         avcCoder.SetWidth(1280);
         avcCoder.SetHeight(720);
         avcCoder.SetBitrate(3000000,false);
-        avcCoder.SetFrameRate(15);
+        avcCoder.SetFrameRate(20);
         avcCoder.SetVideoCodecType(VIDEO_CODEC_TYPE_H264);
         avcCoder.SwitchUV(true);
 
@@ -129,6 +132,17 @@ extern "C"
                                 if (bGetOneNal && pH264 && iH264Len > 0) {
 //                                    LOGW("Encoder :: GetFrame ret:%d, frame_size:%d,timestamps:%d,encode_frames:%d", bGetOneNal, len,Timestamp,encode_frames);
                                     LOGW("Encoder :: GetFrame ret:%d, frame_size:%d,timestamps:%lld,encode_frames:%d", bGetOneNal, iH264Len,Timestamp,++encode_frames);
+
+                                    if (file && iH264Len > 0 && pH264) {
+                                        // todo convert yuv format here for next test.Current encoded frame color space is not correct.
+
+
+                                        write_start_time = get_system_current_time_millis();
+                                        fwrite(pH264, 1, iH264Len, file);
+                                        write_finish_time = get_system_current_time_millis();
+                                        LOGW("Encoder :: GetFrame write index:%d,write_use_time:%lld",encode_frames,
+                                             write_finish_time - write_start_time);
+                                    }
                                     usleep(1000); // just wait a moment.
                                     continue;
                                 }

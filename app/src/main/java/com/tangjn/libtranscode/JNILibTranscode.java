@@ -101,6 +101,7 @@ public class JNILibTranscode {
 
     static {
         System.loadLibrary("x265");
+        System.loadLibrary("yuv");
         System.loadLibrary("ffmpeg");
         System.loadLibrary("avtranscoder");
     }
