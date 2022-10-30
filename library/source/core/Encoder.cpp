@@ -63,6 +63,8 @@ extern "C"
         LOGW("Encoder_tid%d::start loop in process!",thread_id);
         int temp = 0;
 
+        int encode_frames = 0;
+
 
         avcCoder.SetWidth(1280);
         avcCoder.SetHeight(720);
@@ -118,18 +120,23 @@ extern "C"
                             int iH264Len = 0;
                             int64_t Timestamp;
 
+                            int get_times = 0;
+
                             while (1) {
                                 bGetOneNal = avcCoder.GetFrame(mEnv, &pH264, &iH264Len,
                                                                &Timestamp);
-
-                                LOGW("Encoder :: GetFrame len:%d,timestamp:%llu", iH264Len, Timestamp);
-
+//                                LOGW("Encoder :: GetFrame len:%d,timestamp:%llu", iH264Len, Timestamp);
                                 if (bGetOneNal && pH264 && iH264Len > 0) {
-                                    LOGW("Encoder :: GetFrame ret:%d, h264_size:%d", bGetOneNal, len);
-                                    break;
+//                                    LOGW("Encoder :: GetFrame ret:%d, frame_size:%d,timestamps:%d,encode_frames:%d", bGetOneNal, len,Timestamp,encode_frames);
+                                    LOGW("Encoder :: GetFrame ret:%d, frame_size:%d,timestamps:%lld,encode_frames:%d", bGetOneNal, iH264Len,Timestamp,++encode_frames);
+                                    usleep(1000); // just wait a moment.
+                                    continue;
                                 }
 
-                                usleep(5000);
+                                if(++get_times>2){
+                                    break;
+                                }
+                                usleep(2000);
                             }
                         }
                     }else{
