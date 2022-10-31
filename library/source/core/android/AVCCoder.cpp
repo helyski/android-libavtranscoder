@@ -126,7 +126,7 @@
         if (!env){
             return mOpened;
         }
-        LOGE("CAVCCoder::OpenCodec 22222222");
+
         mAVCCoder = init_omx_codec_context();
         if(NULL == mAVCCoder){
             LOGE(" %s 初始化H264硬编码器失败",__FUNCTION__);
@@ -135,7 +135,6 @@
 
         omx_switch_uv(mAVCCoder,mSwitchUV);
 
-        LOGE("CAVCCoder::OpenCodec 333333333");
         if(VIDEO_CODEC_TYPE_H264 == mVideoCodecType)
             strcpy(codecTypeStr,"video/avc");
         if(VIDEO_CODEC_TYPE_H265 == mVideoCodecType)
@@ -224,17 +223,13 @@ end:
     }
 
     bool CAVCCoder::Encode(JNIEnv *env,const unsigned char *Data,int Len){
-        LOGE("CAVCCoder::Encode 22222222 is open:%d",mOpened);
         if(!mOpened)
             return false;
-        LOGE("CAVCCoder::Encode 333333333");
         if( NULL == env)
             return false;
-        LOGE("CAVCCoder::Encode 4444444");
         if( NULL == Data || Len <= 0 )
             return false;
 
-        LOGE("CAVCCoder::Encode 555555555");
         if (!omx_encode(env,mAVCCoder,Data,Len,-1)){
             LOGW("CAVCCoder::Encode %s 编码YUV数据失败",__FUNCTION__);
             return false;
@@ -245,21 +240,16 @@ end:
 
     bool CAVCCoder::GetFrame(JNIEnv *env,unsigned char** Output,int* OutputLen,int64_t* outTimestamp){
         bool ret = false;
-        LOGW("omx_get_encoded_frame GetFrame 111");
         if(!mOpened)
             return ret;
-        LOGW("omx_get_encoded_frame GetFrame 2222");
+
         if( NULL == env)
             return ret;
-
-        LOGW("omx_get_encoded_frame GetFrame 333");
         if( NULL == Output || NULL == OutputLen )
             return ret;
 
-        LOGW("omx_get_encoded_frame GetFrame 444");
         *OutputLen = 0;
         ret = omx_get_encoded_frame(env,mAVCCoder,Output,OutputLen,outTimestamp);
-        LOGW("omx_get_encoded_frame len:%lld,timestamp:%lld",OutputLen,outTimestamp);
         if(!ret || *OutputLen <= 0)
             return false;
 

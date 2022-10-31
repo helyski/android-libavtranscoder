@@ -140,7 +140,6 @@ bool omx_open_video_codec(JNIEnv *env,OmxCodecContext* context,int width,int hei
 	ret = true;
 	LOGD("omx_open_video_codec end");
 end:
-	LOGD("omx_open_video_codec success");
 	return ret;
 }
 
