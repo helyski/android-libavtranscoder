@@ -13,12 +13,14 @@
 #include "timetool.h"
 #include "AVCCoder.h"
 #include "hvjava.h"
+#include "YUVWrapper.h"
 
 extern "C"
 {
 
 
 #include "filetool.h"
+
 
     class Encoder : public SingleThread::ThreadProc{
     public:
@@ -50,6 +52,15 @@ extern "C"
         RingQueue<H264Frame> *mH264Buffer;
 
         CAVCCoder avcCoder;
+
+        int mSrcWidth;
+        int mSrcHeight;
+
+        int mDestWidth;
+        int mDestHeight;
+
+        int mDestBitrate;
+        int mFPS;
 
     };
 

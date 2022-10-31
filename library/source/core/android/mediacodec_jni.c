@@ -24,6 +24,7 @@ typedef struct __tag_media_static_fedlds
 	//clolor_format
 	int COLOR_FormatYUV420Planar;
 	int COLOR_FormatYUV420SemiPlanar;
+	int COLOR_FormatYUV420Flexible;
 }media_static_fedlds;
 
 
@@ -357,6 +358,9 @@ static bool populate_static_fields(JNIEnv* env,media_codec_context* context)
 
 	fid = (*env)->GetStaticFieldID(env,cls, "COLOR_FormatYUV420SemiPlanar","I");
 	context->_media_static_fedlds.COLOR_FormatYUV420SemiPlanar = (int)(*env)->GetStaticIntField(env,cls, fid);
+
+    fid = (*env)->GetStaticFieldID(env,cls, "COLOR_FormatYUV420Flexible","I");
+    context->_media_static_fedlds.COLOR_FormatYUV420Flexible = (int)(*env)->GetStaticIntField(env,cls, fid);
 
 	SAFE_RELEASE_LOCAL_REF_C(env,cls)
 
@@ -816,7 +820,7 @@ bool media_codec_start(JNIEnv *env,media_codec_context* context)
 
 	if(context->config_info.b_video)
 	{
-		context->cur_color_format = context->_media_static_fedlds.COLOR_FormatYUV420Planar;
+		context->cur_color_format = context->_media_static_fedlds.COLOR_FormatYUV420Flexible;
 		strcpy(sz_mime,context->config_info.videoCodecTypeStr);
 		jmime = (*env)->NewStringUTF(env,sz_mime);
 	}

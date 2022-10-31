@@ -12,6 +12,19 @@ extern "C"
         mIsThreadStart = false;
         mExit = false;
 
+
+        /*
+         * Default settings.
+         */
+        mSrcWidth = 1280;
+        mSrcHeight = 720;
+
+        mDestWidth = 640;
+        mDestHeight = 480;
+
+        mDestBitrate = 2000000;
+        mFPS = 20;
+
     }
 
     Encoder::~Encoder() {
@@ -63,16 +76,19 @@ extern "C"
         void* yuv=0;
         int len=0;
 
+        unsigned char *pI420 = nullptr;
+        unsigned char *pScaleI420 = nullptr;
+
         LOGW("Encoder_tid%d::start loop in process!",thread_id);
         int temp = 0;
 
         int encode_frames = 0;
 
 
-        avcCoder.SetWidth(1280);
-        avcCoder.SetHeight(720);
-        avcCoder.SetBitrate(3000000,false);
-        avcCoder.SetFrameRate(20);
+        avcCoder.SetWidth(mDestWidth);
+        avcCoder.SetHeight(mDestHeight);
+        avcCoder.SetBitrate(mDestBitrate,false);
+        avcCoder.SetFrameRate(mFPS);
         avcCoder.SetVideoCodecType(VIDEO_CODEC_TYPE_H264);
         avcCoder.SwitchUV(true);
 
@@ -112,8 +128,26 @@ extern "C"
 
                         if(yuv && len >0) {
 
+                            if(!pI420) {
+                                pI420 = (unsigned char *) malloc(len);
+                            }
+                            if(pI420) {
+                                NV21ToYUV420P((const unsigned char*)yuv,pI420,mSrcWidth,mSrcHeight);
+                            }
+
+                            if(mDestWidth!=mSrcWidth || mDestHeight!=mSrcHeight){
+                                if(!pScaleI420){
+                                    pScaleI420 = (unsigned char*) malloc(mDestWidth * mDestHeight *3 /2);
+                                }
+                                if(pScaleI420){
+                                    ScaleI420(pI420,mSrcWidth,mSrcHeight,pScaleI420,mDestWidth,mDestHeight);
+                                }
+                            }
+
+
+
                             bool encode_stat = false;
-                            encode_stat = avcCoder.Encode(mEnv, (const unsigned char *) yuv, len);
+                            encode_stat = avcCoder.Encode(mEnv, (const unsigned char *) pScaleI420, mDestWidth * mDestHeight *3 /2);
 
                             LOGW("Encoder :: encode stat:%d", encode_stat);
 
@@ -186,6 +220,15 @@ extern "C"
             free(yuv);
             yuv = NULL;
         }
+        if(pI420){
+            free(pI420);
+            pI420 = NULL;
+        }
+        if(pScaleI420){
+            free(pScaleI420);
+            pScaleI420 = NULL;
+        }
+
         LOGW("Encoder_tid%d::exit loop in process!",thread_id);
         return false;
     }
@@ -199,7 +242,7 @@ int Encoder::SetInputBuffer(RingQueue<YUVFrame> *yuvBuffer) {
 int Encoder::SetOutputBuffer(RingQueue<H264Frame> *h264Buffer) {
     mH264Buffer = h264Buffer;
     return 0;
-} ;
+}
 
 }
 
