@@ -40,6 +40,8 @@ namespace LibTranscode {
         RingQueue<H264Frame> *mEncodeBuffer = NULL;
         Decoder *mDecoder;
         Encoder *mEncoder;
+
+        Lock mProcLock;
     };
 
 }

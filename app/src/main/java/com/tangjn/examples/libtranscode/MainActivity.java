@@ -58,6 +58,8 @@ public class MainActivity extends AppCompatActivity  implements View.OnClickList
         Log.e(TAG,"onResume");
         PermissionManager.checkGrantPermission(this,getApplicationContext(),true);
 
+        Thread thread = new Thread(runnable);
+        thread.start();
     }
 
     @Override
@@ -77,7 +79,7 @@ public class MainActivity extends AppCompatActivity  implements View.OnClickList
 //                Log.e(TAG,newFileName);
 //                JNILibTranscode.StartTranscode(SrcFilePath,newFileName,12,640,480,2000,15,true);
 
-                JNILibTranscode.StopTranscode();
+//                JNILibTranscode.StopTranscode();
                 break;
 
             case R.id.btnStartTranscode:
@@ -91,6 +93,51 @@ public class MainActivity extends AppCompatActivity  implements View.OnClickList
                 break;
         }
     }
+
+    private Runnable runnable = new Runnable() {
+
+        private boolean exit = false;
+        private int count  = 0;
+
+        public void finish(){
+            exit = true;
+        }
+        @Override
+        public void run() {
+            while(!exit){
+
+                Log.e(TAG,"hello");
+                Log.e(TAG,"AAAAAAAAAAAAAAAAAAAAAAAAAA");
+//                VideoFactory.testFilter();
+                String newFileName = String.format(Locale.CHINA,"transcode%d_%s",System.currentTimeMillis(),
+                        SrcFilePath.substring(SrcFilePath.lastIndexOf("/")+1));
+                Log.e(TAG,newFileName);
+                JNILibTranscode.StartTranscode(SrcFilePath,newFileName,12,640,480,2000,15,true);
+
+
+                try {
+                    Thread.sleep(1000);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+
+
+                Log.e(TAG,"FFFFFFFFFFFFFFFFFFFFFFFFFF");
+
+                JNILibTranscode.StopTranscode();
+
+                if(++count>100){
+                    break;
+                }
+
+                try {
+                    Thread.sleep(10);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+    };
 
 
 }

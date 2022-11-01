@@ -30,6 +30,7 @@ namespace LibTranscode {
 
     int Processor::StartTranscode(const char *videoPath, const char *outputName, float seek_seconds, int width,
                                 int height, int bitrate, int fps, bool need_audio) {
+        AutoLock lock(mProcLock);
 
 //        BasicTranscodingParams *transcoding_param = (BasicTranscodingParams*) malloc(sizeof (BasicTranscodingParams));
 //
@@ -63,16 +64,16 @@ namespace LibTranscode {
         mDecoder->SetDecodeBuffer(mDecodeBuffer);
         mDecoder->StartThread();
 
-
-        if(mEncoder){
-            mEncoder->StopThread();
-            delete mEncoder;
-            mEncoder = NULL;
-        }
-        mEncoder = new Encoder();
-        mEncoder->SetInputBuffer(mDecodeBuffer);
-        mEncoder->SetOutputBuffer(mEncodeBuffer);
-        mEncoder->StartThread();
+//
+//        if(mEncoder){
+//            mEncoder->StopThread();
+//            delete mEncoder;
+//            mEncoder = NULL;
+//        }
+//        mEncoder = new Encoder();
+//        mEncoder->SetInputBuffer(mDecodeBuffer);
+//        mEncoder->SetOutputBuffer(mEncodeBuffer);
+//        mEncoder->StartThread();
 
         return 1;
 
@@ -80,17 +81,18 @@ namespace LibTranscode {
     }
 
     int Processor::StopTranscode() {
+        AutoLock lock(mProcLock);
         if(mDecoder){
             mDecoder->StopThread();
             delete mDecoder;
             mDecoder = NULL;
         }
 
-        if(mEncoder){
-            mEncoder->StopThread();
-            delete mEncoder;
-            mEncoder = NULL;
-        }
+//        if(mEncoder){
+//            mEncoder->StopThread();
+//            delete mEncoder;
+//            mEncoder = NULL;
+//        }
 
         return 0;
     }

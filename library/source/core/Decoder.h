@@ -44,6 +44,8 @@ private:
     float mDecodeSeekSeconds;
 
     RingQueue<YUVFrame> *mDecodeOutputBuffer;
+
+    Lock mDecoderLock;
 };
 
 

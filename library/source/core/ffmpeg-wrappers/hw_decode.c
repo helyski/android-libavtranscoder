@@ -49,42 +49,57 @@ int start_hw_decode(const char* input_file_path,float seek_seconds){
 
 
 int release_decoder_ctx(){
+    LOGW("release_decoder_ctx 111");
 
-    end:
     packet.data = NULL;
     packet.size = 0;
+
     // TODO need to fix this,av_packet_unref will crash in google nexus5 android11.
 //    ret = decode_write(decoder_ctx, &packet);
 //    av_packet_unref(&packet);
+    LOGW("release_decoder_ctx 222");
+//    if (output_file)
+//        fclose(output_file);
 
-    if (output_file)
-        fclose(output_file);
+    LOGW("release_decoder_ctx 333");
 
     if(decoder_ctx) {
         avcodec_free_context(&decoder_ctx);
-    }
-    if(input_ctx) {
-        avformat_close_input(&input_ctx);
-    }
-    if(hw_device_ctx) {
-        av_buffer_unref(&hw_device_ctx);
+        decoder_ctx = NULL;
     }
 
+    LOGW("release_decoder_ctx 444-2");
+    if(hw_device_ctx) {
+        av_buffer_unref(&hw_device_ctx);
+        hw_device_ctx = NULL;
+    }
+
+    LOGW("release_decoder_ctx 444-1");
+    if(input_ctx) {
+        avformat_close_input(&input_ctx);
+        input_ctx = NULL;
+    }
+
+    LOGW("release_decoder_ctx 444-3");
     if(videoInfo){
         if(videoInfo->decode_info){
             free(videoInfo->decode_info);
+            videoInfo->decode_info = NULL;
         }
         free(videoInfo);
         videoInfo = NULL;
     }
+    LOGW("release_decoder_ctx 555");
 
     if(audioInfo){
         if(audioInfo->decode_info){
             free(audioInfo->decode_info);
+            audioInfo->decode_info = NULL;
         }
         free(audioInfo);
         audioInfo = NULL;
     }
+    LOGW("release_decoder_ctx 666");
 
     decode_state = DECODE_FINISH;
 
@@ -239,6 +254,11 @@ int init_decoder_ctx(const char* input_file_path,float seek_seconds) {
 
     LOGW("hw_decoder_init success !");
 
+
+    if(!decoder_ctx || !decoder){
+        LOGW("avcodec_open2 error , try it again later !");
+        return -1;
+    }
 
     if ((ret = avcodec_open2(decoder_ctx, decoder, NULL)) < 0) {
         LOGW("avcodec_open2: %d(%s)", ret, av_err2str(ret));
