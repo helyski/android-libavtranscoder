@@ -56,7 +56,7 @@ int release_decoder_ctx(){
 
     // TODO need to fix this,av_packet_unref will crash in google nexus5 android11.
 //    ret = decode_write(decoder_ctx, &packet);
-//    av_packet_unref(&packet);
+    av_packet_unref(&packet);
     LOGW("release_decoder_ctx 222");
 //    if (output_file)
 //        fclose(output_file);
@@ -225,10 +225,14 @@ int init_decoder_ctx(const char* input_file_path,float seek_seconds) {
     LOGW("hw_pix_fmt = %d",hw_pix_fmt);
 
     int64_t jump_seconds = 0;
+    if(seek_seconds>0) {
 
-    int seek_result = av_seek_frame(input_ctx,video_stream,jump_seconds/av_q2d(input_ctx->streams[video_stream]->time_base),AVSEEK_FLAG_FRAME);
+        int seek_result = av_seek_frame(input_ctx, video_stream, seek_seconds /
+                                                                 av_q2d(input_ctx->streams[video_stream]->time_base),
+                                        AVSEEK_FLAG_FRAME);
 
-    LOGW("av_seek_frame result = %d",seek_result);
+        LOGW("av_seek_frame result = %d", seek_result);
+    }
 
     decoder_ctx = avcodec_alloc_context3(decoder);
 
@@ -402,6 +406,7 @@ int get_frame(unsigned char **output_buffer,int* buffer_size){
 
         LOGW("decodeYUV finish_SUCCESS read H264 frame.....#, index=%d",packet.stream_index);
         if(video_stream != packet.stream_index){
+            av_packet_unref(&packet);
             continue;
         }
 

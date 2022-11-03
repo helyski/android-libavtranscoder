@@ -8,9 +8,11 @@ using namespace libyuv;
 extern "C"
 {
 
-    Encoder::Encoder(){
+    Encoder::Encoder(CAVCCoder coder){
         mIsThreadStart = false;
         mExit = false;
+
+        avcCoder = coder;
 
 
         /*
@@ -37,10 +39,23 @@ extern "C"
     }
 
     bool Encoder::StartThread() {
+//        AutoLock lock(mEncoderLock);
         if (mIsThreadStart) {
             mThread.stop();
             mIsThreadStart = false;
         }
+
+        AutoLock lock(mEncoderLock);
+//
+//        avcCoder.SetWidth(mDestWidth);
+//        avcCoder.SetHeight(mDestHeight);
+//        avcCoder.SetBitrate(mDestBitrate,false);
+//        avcCoder.SetFrameRate(mFPS);
+//        avcCoder.SetVideoCodecType(VIDEO_CODEC_TYPE_H264);
+//        avcCoder.SwitchUV(true);
+//
+//        avcCoder.OpenCodec();
+
         mThread.registerThreadProc(*this);
         mThread.start(mThreadName);
         mIsThreadStart = true;
@@ -50,11 +65,18 @@ extern "C"
 
     void Encoder::StopThread() {
         mExit = true;
-        if (mIsThreadStart) {
-            mThread.stop();
-            mIsThreadStart = false;
+        LOGW("Encoder::StopThread start ...");
+        {
+            AutoLock lock(mEncoderLock);
+            if (mIsThreadStart) {
+                mThread.stop();
+                mIsThreadStart = false;
+            }
+//            if (avcCoder.isOpened()) {
+//                avcCoder.CloseCodec();
+//            }
         }
-        LOGW("Encoder::StopThread");
+        LOGW("Encoder::StopThread end ...");
     }
 
     bool Encoder::process(int thread_id, void *env) {
@@ -73,8 +95,8 @@ extern "C"
 
         unsigned long long cpy_finish_time;
 
-        void* yuv=0;
-        int len=0;
+//        void* yuv=0;
+//        int len=0;
 
         unsigned char *pI420 = nullptr;
         unsigned char *pScaleI420 = nullptr;
@@ -85,27 +107,24 @@ extern "C"
         int encode_frames = 0;
 
 
-        avcCoder.SetWidth(mDestWidth);
-        avcCoder.SetHeight(mDestHeight);
-        avcCoder.SetBitrate(mDestBitrate,false);
-        avcCoder.SetFrameRate(mFPS);
-        avcCoder.SetVideoCodecType(VIDEO_CODEC_TYPE_H264);
-        avcCoder.SwitchUV(true);
 
-        avcCoder.OpenCodec();
+//        int nead_detach = 0;
+//        JNIEnv *mEnv = hv_get_jni_env(&nead_detach);
+//        if (!mEnv){
+//            return false;
+//        }
 
-        int nead_detach = 0;
-        JNIEnv *mEnv = hv_get_jni_env(&nead_detach);
-        if (!mEnv){
-            return false;
-        }
-
+if(!env){
+    LOGE("CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC");
+    return false;
+}
 
 
         while(!mExit){
             LOGW("Encoder_tid%d::%d!",thread_id,temp++);
             // TODO encode here
 //            break;
+
             {
                 wait_lock_start_time = get_system_current_time_millis();
                 LOGW("Encoder wait_lock_start_time:%lld",wait_lock_start_time);
@@ -114,25 +133,29 @@ extern "C"
                 LOGW("Encoder wait_lock_finish_time:%lld, wait_lock_time:%lld",wait_lock_finish_time,wait_lock_finish_time - wait_lock_start_time);
 
                 if (mYuvBuffer) {
-                    YUVFrame frame = mYuvBuffer->getHeadElement();
-                    LOGW("Encoder_tid%d::get YUV index:%d", thread_id, frame.index);
-                    if (frame.index > yuv_index) {
-                        yuv_index = frame.index;
+                    YUVFrame *frame = mYuvBuffer->GetHeadFrame();
+                    if(!frame){
+                        usleep(5000);
+                        continue;
+                    }
+                    LOGW("Encoder_tid%d::get YUV index:%d", thread_id, frame->index);
+                    if (frame->index > yuv_index) {
+                        yuv_index = frame->index;
                         last_frame_time = get_system_current_time_millis();
-                        len = frame.yuvlen;
+//                        len = frame->yuvlen;
 //                        if(!yuv){
 //                            yuv = malloc(len);
 //                        }
 //                        memcpy(yuv,frame.yuv,len);
-                        yuv = frame.yuv;
+//                        yuv = frame->yuv;
 
-                        if(yuv && len >0) {
+                        if(frame->yuv && frame->yuvlen >0) {
 
                             if(!pI420) {
-                                pI420 = (unsigned char *) malloc(len);
+                                pI420 = (unsigned char *) malloc(frame->yuvlen);
                             }
                             if(pI420) {
-                                NV21ToYUV420P((const unsigned char*)yuv,pI420,mSrcWidth,mSrcHeight);
+                                NV21ToYUV420P((const unsigned char*)frame->yuv,pI420,mSrcWidth,mSrcHeight);
                             }
 
                             if(mDestWidth!=mSrcWidth || mDestHeight!=mSrcHeight){
@@ -145,9 +168,8 @@ extern "C"
                             }
 
 
-
                             bool encode_stat = false;
-                            encode_stat = avcCoder.Encode(mEnv, (const unsigned char *) pScaleI420, mDestWidth * mDestHeight *3 /2);
+                            encode_stat = avcCoder.Encode((JNIEnv*)env, (const unsigned char *) pScaleI420, mDestWidth * mDestHeight *3 /2);
 
                             LOGW("Encoder :: encode stat:%d", encode_stat);
 
@@ -160,12 +182,13 @@ extern "C"
                             int get_times = 0;
 
                             while (1) {
-                                bGetOneNal = avcCoder.GetFrame(mEnv, &pH264, &iH264Len,
+                                bGetOneNal = avcCoder.GetFrame((JNIEnv*)env, &pH264, &iH264Len,
                                                                &Timestamp);
 //                                LOGW("Encoder :: GetFrame len:%d,timestamp:%llu", iH264Len, Timestamp);
                                 if (bGetOneNal && pH264 && iH264Len > 0) {
 //                                    LOGW("Encoder :: GetFrame ret:%d, frame_size:%d,timestamps:%d,encode_frames:%d", bGetOneNal, len,Timestamp,encode_frames);
                                     LOGW("Encoder :: GetFrame ret:%d, frame_size:%d,timestamps:%lld,encode_frames:%d", bGetOneNal, iH264Len,Timestamp,++encode_frames);
+
 
                                     if (file && iH264Len > 0 && pH264) {
                                         // todo convert yuv format here for next test.Current encoded frame color space is not correct.
@@ -178,6 +201,8 @@ extern "C"
                                              write_finish_time - write_start_time);
                                     }
                                     usleep(1000); // just wait a moment.
+                                    free(pH264);
+                                    pH264 = NULL;
                                     continue;
                                 }
 
@@ -187,8 +212,6 @@ extern "C"
                                 usleep(2000);
                             }
                         }
-                    }else{
-                        len = 0;
                     }
                 }
                 cpy_finish_time = get_system_current_time_millis();
@@ -212,14 +235,11 @@ extern "C"
                 break;
             }
         }
+//
+//        if(file){
+//            fclose(file);
+//        }
 
-        if(file){
-            fclose(file);
-        }
-        if(yuv){
-            free(yuv);
-            yuv = NULL;
-        }
         if(pI420){
             free(pI420);
             pI420 = NULL;
@@ -229,20 +249,28 @@ extern "C"
             pScaleI420 = NULL;
         }
 
+//        avcCoder.CloseCodec();
+
+//usleep(1000000);
+
         LOGW("Encoder_tid%d::exit loop in process!",thread_id);
+
+//        if(nead_detach>0){
+//            hv_detach_jni_env(mEnv);
+//        }
         return false;
     }
 
 
-int Encoder::SetInputBuffer(RingQueue<YUVFrame> *yuvBuffer) {
+int Encoder::SetInputBuffer(RawVideoDataBuffer *yuvBuffer) {
     mYuvBuffer = yuvBuffer;
     return 0;
 }
 
-int Encoder::SetOutputBuffer(RingQueue<H264Frame> *h264Buffer) {
-    mH264Buffer = h264Buffer;
-    return 0;
-}
+//int Encoder::SetOutputBuffer(RingQueue<H264Frame> *h264Buffer) {
+//    mH264Buffer = h264Buffer;
+//    return 0;
+//}
 
 }
 
