@@ -14,6 +14,7 @@
 #include "AVCCoder.h"
 #include "hvjava.h"
 #include "YUVWrapper.h"
+#include "RawVideoDataBuffer.h"
 
 extern "C"
 {
@@ -24,16 +25,16 @@ extern "C"
 
     class Encoder : public SingleThread::ThreadProc{
     public:
-        Encoder();
+        Encoder(CAVCCoder coder);
 
         ~Encoder();
 
         bool StartThread();
         void StopThread();
 
-        int SetInputBuffer(RingQueue<YUVFrame> *yuvBuffer);
+        int SetInputBuffer(RawVideoDataBuffer *yuvBuffer);
 
-        int SetOutputBuffer(RingQueue<H264Frame> *h264Buffer);
+//        int SetOutputBuffer(RingQueue<H264Frame> *h264Buffer);
 
         int StartEncode();
 
@@ -46,9 +47,9 @@ extern "C"
         SingleThread mThread;
         bool mIsThreadStart;
         bool mExit;
-        const char * mThreadName = "AvEncoder";
+        const char * mThreadName = "Xencoder";
 
-        RingQueue<YUVFrame>  *mYuvBuffer;
+        RawVideoDataBuffer  *mYuvBuffer;
         RingQueue<H264Frame> *mH264Buffer;
 
         CAVCCoder avcCoder;
@@ -61,6 +62,8 @@ extern "C"
 
         int mDestBitrate;
         int mFPS;
+
+        Lock mEncoderLock;
 
     };
 

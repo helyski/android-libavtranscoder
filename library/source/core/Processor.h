@@ -7,6 +7,8 @@
 
 #include "DataStruct.h"
 #include "RingQueue.h"
+#include "RawVideoDataBuffer.h"
+#include "AVCCoder.h"
 
 extern "C"
 {
@@ -18,11 +20,14 @@ extern "C"
 
 namespace LibTranscode {
 
-    class Processor {
+    class Processor:public SingleThread::ThreadProc {
     public:
-        Processor();
+        Processor(void * vm);
 
         ~Processor();
+
+        int Start();
+        int Stop();
 
         void OpenFFLog();
 
@@ -30,16 +35,30 @@ namespace LibTranscode {
 
         int StopTranscode();
 
-    private:
+        int startMediaCodec(const char* videoPath,float seek);
 
+        int stopMediaCodec();
+
+    private:
+        bool process(int thread_id, void *env);
         int OnDestroy();
 
     private:
+        //工作线程
+        bool mIsThreadStart;
+        SingleThread mThread;
+        bool mExit;
+
+
         Init *init = NULL;
-        RingQueue<YUVFrame> *mDecodeBuffer = NULL;
-        RingQueue<H264Frame> *mEncodeBuffer = NULL;
+//        RingQueue<YUVFrame> *mDecodeBuffer = NULL;
+//        RingQueue<H264Frame> *mEncodeBuffer = NULL;
         Decoder *mDecoder;
         Encoder *mEncoder;
+
+        CAVCCoder mAvcCoder;
+
+        RawVideoDataBuffer *mDecodeBuffer;
 
         Lock mProcLock;
     };

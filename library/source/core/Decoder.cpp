@@ -70,10 +70,10 @@ extern "C"
         {
             AutoLock lock(mDecoderLock);
             // Init decode context first.If has error,proc will exit.
-            ret = init_decoder_ctx(mSrcVideoPath, mDecodeSeekSeconds);
-            if (ret < 0) {
-                goto proc_end;
-            }
+//            ret = init_decoder_ctx(mSrcVideoPath, mDecodeSeekSeconds);
+//            if (ret < 0) {
+//                goto proc_end;
+//            }
             // Check video codec info.If info not found,proc will exit.
             videoInfo = get_video_info();
             if (!videoInfo || videoInfo->width <= 0 || videoInfo->height <= 0) {
@@ -135,25 +135,27 @@ extern "C"
                             break;
                         }
                         LOGW("get frame-> %d, yuv_size:%d", &yuv_buffer, yuv_size);
-                        auto *yuvFrame = (YUVFrame *) malloc(sizeof(YUVFrame));
-                        if (yuvFrame == nullptr) {
-                            break;
-                        }
-                        yuvFrame->width = videoInfo->width;
-                        yuvFrame->height = videoInfo->height;
-                        yuvFrame->duration = videoInfo->durationus;
-                        yuvFrame->start_time = get_system_current_time_millis();
-                        yuvFrame->format_type = 1; // TODO need to add YUV_FORMAT
-                        yuvFrame->yuv = malloc(yuv_size);
-                        yuvFrame->yuvlen = yuv_size;
-                        yuvFrame->index = ++frame_index;
-                        memcpy(yuvFrame->yuv, yuv_buffer, yuv_size);
+//                        auto *yuvFrame = (YUVFrame *) malloc(sizeof(YUVFrame));
+//                        if (yuvFrame == nullptr) {
+//                            break;
+//                        }
+//                        yuvFrame->width = videoInfo->width;
+//                        yuvFrame->height = videoInfo->height;
+//                        yuvFrame->duration = videoInfo->durationus;
+//                        yuvFrame->start_time = get_system_current_time_millis();
+//                        yuvFrame->format_type = 1; // TODO need to add YUV_FORMAT
+//                        yuvFrame->yuv = malloc(yuv_size);
+//                        yuvFrame->yuvlen = yuv_size;
+//                        yuvFrame->index = ++frame_index;
+//                        memcpy(yuvFrame->yuv, yuv_buffer, yuv_size);
+//
+//                        if (mDecodeOutputBuffer->isFull()) {
+//                            YUVFrame topFrame = mDecodeOutputBuffer->pop();
+//                            free(topFrame.yuv);
+//                        }
+//                        mDecodeOutputBuffer->push(*yuvFrame);
 
-                        if (mDecodeOutputBuffer->isFull()) {
-                            YUVFrame topFrame = mDecodeOutputBuffer->pop();
-                            free(topFrame.yuv);
-                        }
-                        mDecodeOutputBuffer->push(*yuvFrame);
+                        mDecodeOutputBuffer->Enqueue((const char*)yuv_buffer,videoInfo->width,videoInfo->height,yuv_size,get_system_current_time_millis(),1,++frame_index);
                     }
 
                     add_queue_finish_time = get_system_current_time_millis();
@@ -202,7 +204,7 @@ extern "C"
 //        }
 
 
-            release_decoder_ctx();
+//            release_decoder_ctx();
 
             if(yuv_buffer){
                 free(yuv_buffer);
@@ -236,7 +238,7 @@ extern "C"
     }
 
 
-    int Decoder::SetDecodeBuffer(RingQueue<YUVFrame> *decodeOutputBuffer) {
+    int Decoder::SetDecodeBuffer(RawVideoDataBuffer *decodeOutputBuffer) {
             mDecodeOutputBuffer = decodeOutputBuffer;
         return 0;
     }

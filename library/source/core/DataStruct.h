@@ -17,7 +17,7 @@ typedef struct _basicTranscodingParams{
     char *destVideoName;
 }BasicTranscodingParams;
 
-struct YUVFrame {
+struct _YUVFrame {
     void * yuv;
     int yuvlen;
     int width;              //YUV宽
@@ -28,7 +28,7 @@ struct YUVFrame {
     int index;
 };
 
-struct H264Frame{
+struct _H264Frame{
     void * H264;
     int width;
     int height;
@@ -62,5 +62,7 @@ struct _AudioInfo {
 
 typedef struct _VideoInfo VideoInfo;
 typedef struct _AudioInfo AudioInfo;
+typedef struct _YUVFrame YUVFrame;
+typedef struct _H264Frame H264Frame;
 
 #endif //ANDROID_LIBTRANSCODE_DATASTRUCT_H

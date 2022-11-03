@@ -1,7 +1,5 @@
-#ifdef __COMMON_ANDROID__
 #include <jni.h>
 #include <hvjava.h>
-#endif
 #include <debug.h>
 #include <pthread.h>
 #include<sys/resource.h>
@@ -51,12 +49,12 @@ void SingleThread::process() {
     int nead_detach = 0;
 
     void *env = 0;
-#ifdef __COMMON_ANDROID__
+
     env  = hv_get_jni_env(&nead_detach);
     if (!env){
         return;
     }
-#endif
+
 
 #ifdef __LITEOS_HIMIX__
     id_ = 0;
@@ -85,10 +83,9 @@ void SingleThread::process() {
         }
     }
 
-#ifdef __COMMON_ANDROID__
     if(nead_detach > 0)
         hv_detach_jni_env((JNIEnv*)env);
-#endif
+
 }
 
 void SingleThread::registerThreadProc(SingleThread::ThreadProc& proc) {

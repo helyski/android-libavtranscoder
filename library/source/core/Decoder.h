@@ -10,6 +10,7 @@
 #include "DataStruct.h"
 #include "RingQueue.h"
 #include "timetool.h"
+#include "RawVideoDataBuffer.h"
 
 extern "C"
 {
@@ -28,7 +29,7 @@ public:
 
     int SetDecodeFileInfo(const char *srcVideoPath, float seek_seconds);
 
-    int SetDecodeBuffer(RingQueue<YUVFrame> *decodeOutputBuffer);
+    int SetDecodeBuffer(RawVideoDataBuffer *decodeOutputBuffer);
 
 private:
     bool process(int thread_id, void *env);
@@ -43,7 +44,7 @@ private:
     char mSrcVideoPath[256];
     float mDecodeSeekSeconds;
 
-    RingQueue<YUVFrame> *mDecodeOutputBuffer;
+    RawVideoDataBuffer *mDecodeOutputBuffer;
 
     Lock mDecoderLock;
 };

@@ -33,7 +33,8 @@ Processor *processor = NULL;
 JNIEXPORT jint JNICALL
 Java_com_tangjn_libtranscode_JNILibTranscode_Init(JNIEnv *env, jclass clazz) {
     int ret = JNI_FALSE;
-    processor = new Processor();
+    processor = new Processor(g_vm);
+    processor->Start();
     if (processor) {
         ret = JNI_TRUE;
     }
@@ -44,10 +45,10 @@ JNIEXPORT jint JNICALL
 Java_com_tangjn_libtranscode_JNILibTranscode_UnInit(JNIEnv *env, jclass clazz) {
     // TODO: implement UnInit()
     int ret = JNI_FALSE;
-    processor = new Processor();
-    if (processor) {
-        ret = JNI_TRUE;
-    }
+//    processor = new Processor();
+//    if (processor) {
+//        ret = JNI_TRUE;
+//    }
     return ret;
 }
 
@@ -162,8 +163,6 @@ JNIEXPORT jint JNICALL  JNI_OnLoad(JavaVM* vm, void* reserved) {
     int result = -1;
 
     g_vm = vm;
-
-    hv_set_jvm(vm);
 
     if (vm->GetEnv((void**) &env, JNI_VERSION_1_6) != JNI_OK) {
         return -1;
