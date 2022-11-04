@@ -16,9 +16,16 @@ namespace LibTranscode {
 //        mEncodeBuffer = new RingQueue<H264Frame>(10);
 
         mDecodeBuffer = new RawVideoDataBuffer();
+        mEncodeBuffer = new EncVideoDataBuffer();
 
         mIsThreadStart = false;
         mExit = false;
+
+        mEncoder = 0;
+        mDecoder = 0;
+        mDispatcher = 0;
+
+        mDataDest = 0;
     }
 
     Processor::~Processor() {
@@ -104,8 +111,15 @@ namespace LibTranscode {
             }
             mEncoder = new Encoder(mAvcCoder);
             mEncoder->SetInputBuffer(mDecodeBuffer);
-//            mEncoder->SetOutputBuffer(NULL);
+            mEncoder->SetOutputBuffer(mEncodeBuffer);
             mEncoder->StartThread();
+
+
+            if(mDataDest==0){
+                mDispatcher = new Dispatcher();
+                mDispatcher->SetDateBuffer(mEncodeBuffer);
+                mDispatcher->StartThread();
+            }
         }
 
         return 1;
@@ -133,6 +147,9 @@ namespace LibTranscode {
 
             if(mDecodeBuffer){
                 mDecodeBuffer->FlushBuffer();
+            }
+            if(mEncodeBuffer){
+                mEncodeBuffer->FlushBuffer();
             }
 
             stopMediaCodec();

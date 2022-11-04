@@ -9,6 +9,7 @@
 #include "RingQueue.h"
 #include "RawVideoDataBuffer.h"
 #include "AVCCoder.h"
+#include "Dispatcher.h"
 
 extern "C"
 {
@@ -55,10 +56,14 @@ namespace LibTranscode {
 //        RingQueue<H264Frame> *mEncodeBuffer = NULL;
         Decoder *mDecoder;
         Encoder *mEncoder;
+        Dispatcher *mDispatcher;
 
         CAVCCoder mAvcCoder;
 
         RawVideoDataBuffer *mDecodeBuffer;
+        EncVideoDataBuffer *mEncodeBuffer;
+
+        int mDataDest;
 
         Lock mProcLock;
     };

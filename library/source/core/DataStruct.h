@@ -29,10 +29,14 @@ struct _YUVFrame {
 };
 
 struct _H264Frame{
-    void * H264;
+    void * h264;
+    int nal_type;
     int width;
     int height;
     int len;
+    int index;
+    int64_t pts;
+    int64_t system_time;
 };
 
 

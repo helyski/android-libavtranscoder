@@ -94,6 +94,8 @@ extern "C"
             unsigned long long add_queue_finish_time;
             unsigned long long last_finish_time;
 
+            unsigned long long one_frame_time;
+
             while (!mExit) {
                 lock_start_time = get_system_current_time_millis();
                 LOGW("Decoder loop start at:%lld, frame_max_handle_time:%lld", lock_start_time,
@@ -169,8 +171,9 @@ extern "C"
                     }
                 }
 
-                LOGW("Decoder decode one frame total use_time:%lld",
-                     get_system_current_time_millis() - lock_start_time);
+                one_frame_time = get_system_current_time_millis() - lock_start_time;
+
+                LOGW("Decoder decode one frame total use_time:%lld",one_frame_time);
                 if (ret == DEC_INPUT_END_ERR) {
                     break;
                 }
@@ -178,10 +181,10 @@ extern "C"
                 // Sleep remaining time on a frame handling period.
 //            uint64_t this_time = get_system_current_time_millis();
 //            uint32_t used_time = this_time - last_decode_time;
-                if (used_time > max_handle_time) {
+                if (one_frame_time > max_handle_time) {
                     sleep_time = 1;
                 } else {
-                    sleep_time = max_handle_time - used_time;
+                    sleep_time = max_handle_time - one_frame_time;
                 }
 //            last_decode_time = this_time;
                 LOGW("Decoder sleep_ms:%lld,start_time:%lld,end_time:%lld,max_time:%lld",

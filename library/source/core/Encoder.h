@@ -15,12 +15,14 @@
 #include "hvjava.h"
 #include "YUVWrapper.h"
 #include "RawVideoDataBuffer.h"
+#include "EncVideoDataBuffer.h"
 
 extern "C"
 {
 
 
 #include "filetool.h"
+#include "tool.h"
 
 
     class Encoder : public SingleThread::ThreadProc{
@@ -34,7 +36,7 @@ extern "C"
 
         int SetInputBuffer(RawVideoDataBuffer *yuvBuffer);
 
-//        int SetOutputBuffer(RingQueue<H264Frame> *h264Buffer);
+        int SetOutputBuffer(EncVideoDataBuffer *h264Buffer);
 
         int StartEncode();
 
@@ -50,7 +52,7 @@ extern "C"
         const char * mThreadName = "Xencoder";
 
         RawVideoDataBuffer  *mYuvBuffer;
-        RingQueue<H264Frame> *mH264Buffer;
+        EncVideoDataBuffer *mH264Buffer;
 
         CAVCCoder avcCoder;
 

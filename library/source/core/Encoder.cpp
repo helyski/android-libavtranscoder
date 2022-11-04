@@ -176,33 +176,33 @@ if(!env){
 
                             bool bGetOneNal = false;
                             unsigned char *pH264 = NULL;
-                            int iH264Len = 0;
-                            int64_t Timestamp;
+                            int len = 0;
+                            int64_t pts;
 
                             int get_times = 0;
 
                             while (1) {
-                                bGetOneNal = avcCoder.GetFrame((JNIEnv*)env, &pH264, &iH264Len,
-                                                               &Timestamp);
+                                bGetOneNal = avcCoder.GetFrame((JNIEnv*)env, &pH264, &len,
+                                                               &pts);
 //                                LOGW("Encoder :: GetFrame len:%d,timestamp:%llu", iH264Len, Timestamp);
-                                if (bGetOneNal && pH264 && iH264Len > 0) {
+                                if (bGetOneNal && pH264 && len > 0) {
 //                                    LOGW("Encoder :: GetFrame ret:%d, frame_size:%d,timestamps:%d,encode_frames:%d", bGetOneNal, len,Timestamp,encode_frames);
-                                    LOGW("Encoder :: GetFrame ret:%d, frame_size:%d,timestamps:%lld,encode_frames:%d", bGetOneNal, iH264Len,Timestamp,++encode_frames);
 
+                                    mH264Buffer->Enqueue((const char*)pH264,get_nal_type(pH264,len),len,mDestWidth,mDestHeight,pts,get_system_current_time_millis(),++encode_frames);
+                                    LOGW("Encoder :: GetFrame ret:%d, frame_size:%d,timestamps:%lld,encode_frames:%d", bGetOneNal, len,pts,encode_frames);
 
-                                    if (file && iH264Len > 0 && pH264) {
+//                                    if (file && len > 0 && pH264) {
                                         // todo convert yuv format here for next test.Current encoded frame color space is not correct.
-
-
-                                        write_start_time = get_system_current_time_millis();
-                                        fwrite(pH264, 1, iH264Len, file);
-                                        write_finish_time = get_system_current_time_millis();
-                                        LOGW("Encoder :: GetFrame write index:%d,write_use_time:%lld",encode_frames,
-                                             write_finish_time - write_start_time);
-                                    }
+//                                        write_start_time = get_system_current_time_millis();
+//                                        fwrite(pH264, 1, iH264Len, file);
+//                                        write_finish_time = get_system_current_time_millis();
+//                                        LOGW("Encoder :: GetFrame write index:%d,write_use_time:%lld",encode_frames,
+//                                             write_finish_time - write_start_time);
+//                                    }
                                     usleep(1000); // just wait a moment.
                                     free(pH264);
                                     pH264 = NULL;
+                                    get_times=0;
                                     continue;
                                 }
 
@@ -267,10 +267,10 @@ int Encoder::SetInputBuffer(RawVideoDataBuffer *yuvBuffer) {
     return 0;
 }
 
-//int Encoder::SetOutputBuffer(RingQueue<H264Frame> *h264Buffer) {
-//    mH264Buffer = h264Buffer;
-//    return 0;
-//}
+int Encoder::SetOutputBuffer(EncVideoDataBuffer *h264Buffer) {
+    mH264Buffer = h264Buffer;
+    return 0;
+}
 
 }
 
