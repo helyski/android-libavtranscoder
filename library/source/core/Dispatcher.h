@@ -8,6 +8,9 @@
 #include <SingleThread.h>
 #include "DataStruct.h"
 #include "EncVideoDataBuffer.h"
+#include "tool.h"
+#include "common.h"
+
 
 
 class Dispatcher:public SingleThread::ThreadProc {
@@ -22,7 +25,7 @@ public:
 
     void SetDateBuffer(EncVideoDataBuffer *dataBuffer);
 
-    void SetJVMCallBack();
+    void SetVideoFrameCallBack(video_frame_call_back callBack);
 
 
 private:
@@ -40,6 +43,8 @@ private:
 
     Lock mThreadLock;
 
+
+    video_frame_call_back mVideoCallBack;
 };
 
 

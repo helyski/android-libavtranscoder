@@ -10,6 +10,7 @@
 #include "RawVideoDataBuffer.h"
 #include "AVCCoder.h"
 #include "Dispatcher.h"
+#include "common.h"
 
 extern "C"
 {
@@ -17,9 +18,11 @@ extern "C"
 #include "Decoder.h"
 #include "Encoder.h"
 #include "ffmpeg-wrappers/hw_decode.h"
+#include "transcode_to_java.h"
+
+//typedef void (*video_frame_call_back)(int index,void *data,int len,unsigned long long pts,int is_key_frame,int nal_type);
 
 
-namespace LibTranscode {
 
     class Processor:public SingleThread::ThreadProc {
     public:
@@ -40,9 +43,12 @@ namespace LibTranscode {
 
         int stopMediaCodec();
 
+        int SetVideoOutputType(int type,video_frame_call_back cb);
+
     private:
         bool process(int thread_id, void *env);
         int OnDestroy();
+        int SetVideoFrameCallBack(video_frame_call_back cb);
 
     private:
         //工作线程
@@ -68,7 +74,7 @@ namespace LibTranscode {
         Lock mProcLock;
     };
 
-}
+
 
 
 }

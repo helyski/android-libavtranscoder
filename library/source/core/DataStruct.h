@@ -69,4 +69,10 @@ typedef struct _AudioInfo AudioInfo;
 typedef struct _YUVFrame YUVFrame;
 typedef struct _H264Frame H264Frame;
 
+enum TRANSCODE_OUTPUT_TYPE{
+    OUTPUT_VIDEO_FILE = 0,
+    OUTPUT_H264_STREAM_SHARE_TO_JAVA ,
+    OUTPUT_H264_STREAM_PUSH_TO_RTMP_SERVER
+};
+
 #endif //ANDROID_LIBTRANSCODE_DATASTRUCT_H

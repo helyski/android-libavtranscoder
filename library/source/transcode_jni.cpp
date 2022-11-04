@@ -9,14 +9,19 @@
 #include "Processor.h"
 #include "hvjava.h"
 
-using namespace LibTranscode;
+
+
 
 #ifdef __cplusplus
 extern "C"
 {
 #endif
 
+#include "transcode_to_java.h"
 #include <libavcodec/jni.h>
+#include "DataStruct.h"
+
+
 
 static JavaVM *g_vm = NULL;
 
@@ -38,12 +43,14 @@ Java_com_tangjn_libtranscode_JNILibTranscode_Init(JNIEnv *env, jclass clazz) {
     if (processor) {
         ret = JNI_TRUE;
     }
+    init_all_jni_api();
     return ret;
 }
 
 JNIEXPORT jint JNICALL
 Java_com_tangjn_libtranscode_JNILibTranscode_UnInit(JNIEnv *env, jclass clazz) {
     // TODO: implement UnInit()
+    unInit_all_jni_api();
     int ret = JNI_FALSE;
 //    processor = new Processor();
 //    if (processor) {
@@ -95,6 +102,8 @@ Java_com_tangjn_libtranscode_JNILibTranscode_SetTranscodeOutputType(JNIEnv *env,
     int ret = JNI_FALSE;
     if (processor) {
         // TODO next
+
+        processor->SetVideoOutputType(out_put_type,video_encode_frame_call_back);
         ret = JNI_TRUE;
     }
     return ret;

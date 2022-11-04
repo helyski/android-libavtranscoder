@@ -1,5 +1,7 @@
 package com.tangjn.libtranscode;
 
+import java.nio.ByteBuffer;
+
 /**
  * @author Tank
  *
@@ -7,12 +9,17 @@ package com.tangjn.libtranscode;
  */
 public class JNILibTranscode {
 
+    private static NativeListener mNativeListener;
+
     public interface TRANSCODE_OUTPUT_TYPE{
         int OUTPUT_VIDEO_FILE = 0;
         int OUTPUT_H264_STREAM_SHARE_TO_JAVA = 1;
         int OUTPUT_H264_STREAM_PUSH_TO_RTMP_SERVER = 2;
     }
 
+    public interface NativeListener{
+        void onH264CallBack(int dataIndex, ByteBuffer data, int len, long pts, int isKeyFrame, int nal_type);
+    }
 
 
     /**
@@ -96,6 +103,16 @@ public class JNILibTranscode {
      */
     public static native int StopTranscode();
 
+
+    public static void OnH264CallBack(int dataIndex, ByteBuffer data, int len, long pts, int isKeyFrame, int nal_type){
+        if(null != mNativeListener){
+            mNativeListener.onH264CallBack(dataIndex,data,len,pts,isKeyFrame,nal_type);
+        }
+    }
+
+    public static void setNativeListener(NativeListener listener){
+        mNativeListener = listener;
+    }
 
 
 

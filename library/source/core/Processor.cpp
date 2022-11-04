@@ -5,10 +5,16 @@
 #include "Processor.h"
 extern "C"
 {
-namespace LibTranscode {
+
+
+
+
+
 
     Processor::Processor(void *vm) {
         hv_set_jvm((JavaVM*)vm);
+//        init_all_jni_api();
+
         init = new Init();
         mDecoder = 0;
         mEncoder = 0;
@@ -29,7 +35,7 @@ namespace LibTranscode {
     }
 
     Processor::~Processor() {
-
+//        unInit_all_jni_api();
     }
 
     int Processor::Start() {
@@ -44,7 +50,7 @@ namespace LibTranscode {
         mIsThreadStart = true;
 
         LOGD("Processor::Start 2");
-        return true;
+        return 0;
     }
 
     int Processor::Stop() {
@@ -56,6 +62,7 @@ namespace LibTranscode {
             mExit = true;
         }
         LOGD("Processor::Stop 2");
+        return 0;
     }
 
     void Processor::OpenFFLog() {
@@ -115,11 +122,7 @@ namespace LibTranscode {
             mEncoder->StartThread();
 
 
-            if(mDataDest==0){
-                mDispatcher = new Dispatcher();
-                mDispatcher->SetDateBuffer(mEncodeBuffer);
-                mDispatcher->StartThread();
-            }
+
         }
 
         return 1;
@@ -187,14 +190,35 @@ namespace LibTranscode {
         return 0;
     }
 
+    int Processor::SetVideoOutputType(int type,video_frame_call_back cb) {
+        LOGD("SetVideoOutputType type = %d",type);
+        mDataDest = type;
+        if(mDataDest==1){
+            mDispatcher = new Dispatcher();
+            mDispatcher->SetDateBuffer(mEncodeBuffer);
+            mDispatcher->StartThread();
+        }
+        SetVideoFrameCallBack(cb);
+        return 0;
+    }
+
+    int Processor::SetVideoFrameCallBack(video_frame_call_back cb) {
+        if(mDispatcher){
+            LOGD("SetVideoFrameCallBack");
+            mDispatcher->SetVideoFrameCallBack(cb);
+        }
+        return 0;
+    }
+
 
     bool Processor::process(int thread_id, void *env) {
         while(!mExit){
             usleep(1000000);
         }
+        return false;
     }
 
 
-}
+
 
 }

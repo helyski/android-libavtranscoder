@@ -41,7 +41,9 @@ void Dispatcher::SetDateBuffer(EncVideoDataBuffer *dataBuffer) {
     mVideoBuffer = dataBuffer;
 }
 
-
+void Dispatcher::SetVideoFrameCallBack(video_frame_call_back callBack) {
+    mVideoCallBack = callBack;
+}
 
 
 bool Dispatcher::process(int thread_id, void *env) {
@@ -61,6 +63,12 @@ bool Dispatcher::process(int thread_id, void *env) {
                 }
 
                 mLastIndex = frame->index;
+
+                if(mVideoCallBack){
+                    mVideoCallBack(0,frame->h264,frame->len,frame->pts,
+                                   is_h264_keyframe(frame->h264,frame->len),
+                                   get_nal_type(frame->h264,frame->len));
+                }
 
                 // TODO next.
             }

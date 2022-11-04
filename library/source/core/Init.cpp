@@ -4,7 +4,7 @@
 
 #include "Init.h"
 
-namespace LibTranscode {
+
 
     Init::Init() {
 
@@ -31,4 +31,4 @@ namespace LibTranscode {
         av_log_set_callback(ffmpeg_log_callback);
     }
 
-}
+

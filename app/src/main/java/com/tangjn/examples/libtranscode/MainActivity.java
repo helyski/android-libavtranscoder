@@ -10,10 +10,11 @@ import android.view.View;
 import com.tangjn.libtranscode.JNILibTranscode;
 
 import java.lang.ref.WeakReference;
+import java.nio.ByteBuffer;
 import java.util.Locale;
 import java.util.concurrent.ArrayBlockingQueue;
 
-public class MainActivity extends AppCompatActivity  implements View.OnClickListener{
+public class MainActivity extends AppCompatActivity  implements View.OnClickListener,JNILibTranscode.NativeListener{
     private static final String TAG = "MainActivity";
 
     /**
@@ -54,6 +55,7 @@ public class MainActivity extends AppCompatActivity  implements View.OnClickList
         findViewById(R.id.btnStopTranscode).setOnClickListener(this);
 
         JNILibTranscode.Init();
+        JNILibTranscode.SetTranscodeOutputType(JNILibTranscode.TRANSCODE_OUTPUT_TYPE.OUTPUT_H264_STREAM_SHARE_TO_JAVA);
 //        JNILibTranscode.OpenFFmpegLog();
 //        VideoFactory.testFilter();
 
@@ -62,6 +64,8 @@ public class MainActivity extends AppCompatActivity  implements View.OnClickList
 
         t = new ExeThread(mMainHandler);
         t.start();
+
+        JNILibTranscode.setNativeListener(this);
     }
 
     @Override
@@ -237,4 +241,9 @@ public class MainActivity extends AppCompatActivity  implements View.OnClickList
         }
     }
 
+
+    @Override
+    public void onH264CallBack(int dataIndex, ByteBuffer data, int len, long pts, int isKeyFrame, int nal_type) {
+        Log.d(TAG,"onH264CallBack dataIndex"+dataIndex+", len:"+len);
+    }
 }

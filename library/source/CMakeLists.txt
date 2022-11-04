@@ -32,6 +32,7 @@ include_directories(
         ${CMAKE_SOURCE_DIR}/source/core/thread
         ${CMAKE_SOURCE_DIR}/source/core/android
         ${CMAKE_SOURCE_DIR}/source/libyuvmaster
+        ${CMAKE_SOURCE_DIR}/source/core/jnicall
 )
 
 # 设置源文件，单个文件用set，多个文件可以使用file
@@ -40,6 +41,7 @@ file (GLOB_RECURSE core_src "core/*.c*" )
 file (GLOB_RECURSE tool_src "tools/*.c*" )
 file (GLOB_RECURSE ffmpeg_wrapper_src "core/ffmpeg-wrappers/*.c*" )
 file (GLOB_RECURSE mediacodec_wrapper_src "core/android/*.c*" )
+file (GLOB_RECURSE jni_src "core/jnicall/*.c*" )
 
 
 add_library( # Sets the name of the library.

@@ -27,7 +27,7 @@ extern "C"
 };
 #endif
 
-namespace LibTranscode {
+
     class Init {
     public:
         Init();
@@ -40,7 +40,7 @@ namespace LibTranscode {
         static void ffmpeg_log_callback(void *ptr, int level, const char *fmt, va_list vl);
 
     };
-}
+
 
 
 #endif //ANDROID_LIBTRANSCODE_INIT_H
