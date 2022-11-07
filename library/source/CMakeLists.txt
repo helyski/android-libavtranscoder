@@ -66,16 +66,16 @@ find_library( # Sets the name of the path variable.
 
 
 # 加第三方动态库
-add_library(libffmpeg SHARED IMPORTED)
+add_library(libffmpegandroid SHARED IMPORTED)
 add_library(libx265 SHARED IMPORTED)
 add_library(libyuv SHARED IMPORTED)
 
 # 根据架构选择对应的动态库文件
 if(${ANDROID_ABI} STREQUAL "armeabi-v7a")
     set_target_properties(
-            libffmpeg
+            libffmpegandroid
             PROPERTIES IMPORTED_LOCATION
-            ${CMAKE_SOURCE_DIR}/../app/libs/armeabi-v7a/libffmpeg.so
+            ${CMAKE_SOURCE_DIR}/../app/libs/armeabi-v7a/libffmpegandroid.so
     )
     set_target_properties(
             libx265
@@ -91,9 +91,9 @@ endif(${ANDROID_ABI} STREQUAL "armeabi-v7a")
 
 if(${ANDROID_ABI} STREQUAL "arm64-v8a")
     set_target_properties(
-            libffmpeg
+            libffmpegandroid
             PROPERTIES IMPORTED_LOCATION
-            ${CMAKE_SOURCE_DIR}/../app/libs/arm64-v8a/libffmpeg.so
+            ${CMAKE_SOURCE_DIR}/../app/libs/arm64-v8a/libffmpegandroid.so
     )
     set_target_properties(
             libx265
@@ -109,7 +109,7 @@ endif(${ANDROID_ABI} STREQUAL "arm64-v8a")
 
 # 设置目标库链接的第三方静态库
 
-target_link_libraries(avtranscoder libffmpeg)
+target_link_libraries(avtranscoder libffmpegandroid)
 target_link_libraries(avtranscoder libx265)
 target_link_libraries(avtranscoder libyuv)
 target_link_libraries(avtranscoder jnigraphics)
