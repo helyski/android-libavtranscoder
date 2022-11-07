@@ -1,4 +1,4 @@
-package com.tangjn.libtranscode;
+package com.mg.libtranscode;
 
 import java.nio.ByteBuffer;
 

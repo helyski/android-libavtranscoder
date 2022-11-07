@@ -36,7 +36,7 @@ Processor *processor = NULL;
  *          JNI_FALSE if init error;
  */
 JNIEXPORT jint JNICALL
-Java_com_tangjn_libtranscode_JNILibTranscode_Init(JNIEnv *env, jclass clazz) {
+Java_com_mg_libtranscode_JNILibTranscode_Init(JNIEnv *env, jclass clazz) {
     int ret = JNI_FALSE;
     processor = new Processor(g_vm);
     processor->Start();
@@ -48,7 +48,7 @@ Java_com_tangjn_libtranscode_JNILibTranscode_Init(JNIEnv *env, jclass clazz) {
 }
 
 JNIEXPORT jint JNICALL
-Java_com_tangjn_libtranscode_JNILibTranscode_UnInit(JNIEnv *env, jclass clazz) {
+Java_com_mg_libtranscode_JNILibTranscode_UnInit(JNIEnv *env, jclass clazz) {
     // TODO: implement UnInit()
     unInit_all_jni_api();
     int ret = JNI_FALSE;
@@ -61,7 +61,7 @@ Java_com_tangjn_libtranscode_JNILibTranscode_UnInit(JNIEnv *env, jclass clazz) {
 
 
 JNIEXPORT jint JNICALL
-Java_com_tangjn_libtranscode_JNILibTranscode_OpenFFmpegLog(JNIEnv *env, jclass clazz) {
+Java_com_mg_libtranscode_JNILibTranscode_OpenFFmpegLog(JNIEnv *env, jclass clazz) {
     int ret = JNI_FALSE;
     if (processor) {
         processor->OpenFFLog();
@@ -72,7 +72,7 @@ Java_com_tangjn_libtranscode_JNILibTranscode_OpenFFmpegLog(JNIEnv *env, jclass c
 
 
 JNIEXPORT jint JNICALL
-Java_com_tangjn_libtranscode_JNILibTranscode_SetEnableMediaCodec(JNIEnv *env, jclass clazz,
+Java_com_mg_libtranscode_JNILibTranscode_SetEnableMediaCodec(JNIEnv *env, jclass clazz,
                                                                  jboolean enable) {
     // TODO: implement SetEnableMediaCodec()
     int ret = JNI_FALSE;
@@ -84,7 +84,7 @@ Java_com_tangjn_libtranscode_JNILibTranscode_SetEnableMediaCodec(JNIEnv *env, jc
 }
 
 JNIEXPORT jint JNICALL
-Java_com_tangjn_libtranscode_JNILibTranscode_SetOutputFileDirection(JNIEnv *env, jclass clazz,
+Java_com_mg_libtranscode_JNILibTranscode_SetOutputFileDirection(JNIEnv *env, jclass clazz,
                                                                     jstring dir) {
     // TODO: implement SetOutputFileDirection()
     int ret = JNI_FALSE;
@@ -96,7 +96,7 @@ Java_com_tangjn_libtranscode_JNILibTranscode_SetOutputFileDirection(JNIEnv *env,
 }
 
 JNIEXPORT jint JNICALL
-Java_com_tangjn_libtranscode_JNILibTranscode_SetTranscodeOutputType(JNIEnv *env, jclass clazz,
+Java_com_mg_libtranscode_JNILibTranscode_SetTranscodeOutputType(JNIEnv *env, jclass clazz,
                                                                     jint out_put_type) {
     // TODO: implement SetTranscodeOutputType()
     int ret = JNI_FALSE;
@@ -110,7 +110,7 @@ Java_com_tangjn_libtranscode_JNILibTranscode_SetTranscodeOutputType(JNIEnv *env,
 }
 
 JNIEXPORT jint JNICALL
-Java_com_tangjn_libtranscode_JNILibTranscode_StartTranscode(JNIEnv *env, jclass clazz,
+Java_com_mg_libtranscode_JNILibTranscode_StartTranscode(JNIEnv *env, jclass clazz,
                                                             jstring src_video_path,
                                                             jstring dest_video_name,
                                                             jfloat seek_seconds, jint dest_width,
@@ -149,7 +149,7 @@ Java_com_tangjn_libtranscode_JNILibTranscode_StartTranscode(JNIEnv *env, jclass 
 }
 
 JNIEXPORT jint JNICALL
-Java_com_tangjn_libtranscode_JNILibTranscode_StopTranscode(JNIEnv *env, jclass clazz) {
+Java_com_mg_libtranscode_JNILibTranscode_StopTranscode(JNIEnv *env, jclass clazz) {
     // TODO: implement StopTranscode()
     int ret = JNI_FALSE;
     if(processor){

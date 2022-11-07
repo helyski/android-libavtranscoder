@@ -1,4 +1,4 @@
-package com.tangjn.examples.libtranscode;
+package com.mg.examples.libtranscode;
 import android.annotation.SuppressLint;
 import android.os.Bundle;
 import android.os.Handler;
@@ -7,7 +7,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
 
-import com.tangjn.libtranscode.JNILibTranscode;
+import com.mg.libtranscode.JNILibTranscode;
 
 import java.lang.ref.WeakReference;
 import java.nio.ByteBuffer;

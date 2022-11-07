@@ -1,4 +1,4 @@
-package com.tangjn.examples.libtranscode;
+package com.mg.examples.libtranscode;
 
 import org.junit.Test;
 
