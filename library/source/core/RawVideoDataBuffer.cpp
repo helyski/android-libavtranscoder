@@ -12,6 +12,7 @@ RawVideoDataBuffer::~RawVideoDataBuffer() {
 }
 
 int RawVideoDataBuffer::Enqueue(const char *inputYUV, int width, int height, int len,unsigned long long timestamp,int yuv_format,int index) {
+    AutoLock lock(mQueueLock);
     if(!inputYUV || len<=0)
         return -1;
     bool ret;
@@ -47,10 +48,12 @@ int RawVideoDataBuffer::ClearFrames() {
 }
 
 YUVFrame * RawVideoDataBuffer::GetHeadFrame() {
+    AutoLock lock(mQueueLock);
     return (YUVFrame*)GetFront();
 }
 
 int RawVideoDataBuffer::FlushBuffer() {
+    AutoLock lock(mQueueLock);
     EraseQueue();
     return 0;
 }

@@ -6,8 +6,8 @@
 
 const char * TAG = "hw_decode";
 
-AVBufferRef *hw_device_ctx = NULL;
-enum AVPixelFormat hw_pix_fmt;
+static AVBufferRef *hw_device_ctx = NULL;
+static enum AVPixelFormat hw_pix_fmt;
 char is_stop = 0;
 enum DecodeState decode_state = DECODE_NOT_START;
 
@@ -54,6 +54,8 @@ int release_decoder_ctx(){
     packet.data = NULL;
     packet.size = 0;
 
+    decode(decoder_ctx,&packet,0,0);
+
     // TODO need to fix this,av_packet_unref will crash in google nexus5 android11.
 //    ret = decode_write(decoder_ctx, &packet);
     av_packet_unref(&packet);
@@ -68,16 +70,16 @@ int release_decoder_ctx(){
         decoder_ctx = NULL;
     }
 
-    LOGW("release_decoder_ctx 444-2");
-    if(hw_device_ctx) {
-        av_buffer_unref(&hw_device_ctx);
-        hw_device_ctx = NULL;
-    }
-
     LOGW("release_decoder_ctx 444-1");
     if(input_ctx) {
         avformat_close_input(&input_ctx);
         input_ctx = NULL;
+    }
+
+    LOGW("release_decoder_ctx 444-2");
+    if(hw_device_ctx) {
+        av_buffer_unref(&hw_device_ctx);
+        hw_device_ctx = NULL;
     }
 
     LOGW("release_decoder_ctx 444-3");
@@ -367,6 +369,14 @@ int decode(AVCodecContext *avctx, AVPacket *packet,unsigned char **output_buffer
             LOGW("Can not copy image to buffer\n");
             goto fail;
         }
+
+        if(packet->data==NULL &&packet->size==0){
+            goto fail;
+        }
+
+        LOGW("Decoder decode packet data:%d,packet size:%d\n",packet->data,packet->size);
+
+
 
         if(*output_buffer){
             free(*output_buffer);

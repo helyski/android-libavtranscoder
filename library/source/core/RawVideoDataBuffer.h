@@ -26,6 +26,9 @@ public:
 
     int FlushBuffer();
 
+private:
+    Lock mQueueLock;
+
 };
 
 #endif //ANDROID_LIBTRANSCODE_RAWVIDEODATABUFFER
