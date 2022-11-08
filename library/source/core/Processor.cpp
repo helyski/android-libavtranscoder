@@ -110,7 +110,7 @@ extern "C"
         mEncoder->SetInputBuffer(mDecodeBuffer);
         mEncoder->SetOutputBuffer(mEncodeBuffer);
         mEncoder->StartThread();
-        
+
         /**
          * Dispatcher
          */
