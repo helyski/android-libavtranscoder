@@ -77,67 +77,55 @@ extern "C"
                                 int height, int bitrate, int fps, bool need_audio) {
         AutoLock lock(mProcLock);
 
-//        BasicTranscodingParams *transcoding_param = (BasicTranscodingParams*) malloc(sizeof (BasicTranscodingParams));
-//
-//        if(!transcoding_param){
-//            return 0;
-//        }
-//
-//        memset(transcoding_param,0,sizeof(BasicTranscodingParams));
-//
-//        transcoding_param->width = width;
-//        transcoding_param->height = height;
-//        transcoding_param->bitrate = bitrate;
-//        transcoding_param->fps = fps;
-//        transcoding_param->seek_seconds = seek_seconds;
-//
-//        transcoding_param->destVideoName = (char *)malloc(sizeof(char *));
-//        if(transcoding_param->destVideoName){
-//
-//        }
+        LOGW("srcVideoPath:%s,outputName:%s", videoPath, outputName);
 
-        LOGW("srcVideoPath:%s,outputName:%s",videoPath,outputName);
-        {
-            startMediaCodec(videoPath,seek_seconds);
+        startMediaCodec(videoPath, seek_seconds);
 
-            if (mDecoder) {
-                mDecoder->StopThread();
-                delete mDecoder;
-                mDecoder = NULL;
-            }
-            mDecoder = new Decoder();
-            mDecoder->SetStateListener([this](int state){
-                return this->OnDecoderStatChanged(state);
-            });
-//            mDecoder->SetStateListener(std::bind(&Processor::OnDecoderStatChanged, this, std::placeholders::_1));
-            mDecoder->SetDecodeFileInfo(videoPath, seek_seconds);
-            mDecoder->SetDecodeBuffer(mDecodeBuffer);
-            mDecoder->StartThread();
-
-
-            if (mEncoder) {
-                mEncoder->StopThread();
-                delete mEncoder;
-                mEncoder = NULL;
-            }
-            mEncoder = new Encoder(mAvcCoder);
-            mEncoder->SetInputBuffer(mDecodeBuffer);
-            mEncoder->SetOutputBuffer(mEncodeBuffer);
-            mEncoder->StartThread();
-
-
-            if(mDataDest==1){
-                mDispatcher = new Dispatcher();
-                mDispatcher->SetDateBuffer(mEncodeBuffer);
-                mDispatcher->StartThread();
-                SetVideoFrameCallBack(mFrameCallBack);
-            }
-
+        /**
+         * Decoder
+         */
+        if (mDecoder) {
+            mDecoder->StopThread();
+            delete mDecoder;
+            mDecoder = NULL;
         }
+        mDecoder = new Decoder();
+        mDecoder->SetStateListener([this](int state) {
+            return this->OnDecoderStatChanged(state);
+        });
+//            mDecoder->SetStateListener(std::bind(&Processor::OnDecoderStatChanged, this, std::placeholders::_1));
+        mDecoder->SetDecodeFileInfo(videoPath, seek_seconds);
+        mDecoder->SetDecodeBuffer(mDecodeBuffer);
+        mDecoder->StartThread();
 
+        /**
+         * Encoder
+         */
+        if (mEncoder) {
+            mEncoder->StopThread();
+            delete mEncoder;
+            mEncoder = NULL;
+        }
+        mEncoder = new Encoder(mAvcCoder);
+        mEncoder->SetInputBuffer(mDecodeBuffer);
+        mEncoder->SetOutputBuffer(mEncodeBuffer);
+        mEncoder->StartThread();
+        
+        /**
+         * Dispatcher
+         */
+        if (mDispatcher) {
+            mDispatcher->StopThread();
+            delete mDispatcher;
+            mDispatcher = NULL;
+        }
+        if (mDataDest == OUTPUT_H264_STREAM_SHARE_TO_JAVA) {
+            mDispatcher = new Dispatcher();
+            mDispatcher->SetDateBuffer(mEncodeBuffer);
+            mDispatcher->StartThread();
+            SetVideoFrameCallBack(mFrameCallBack);
+        }
         return 1;
-
-
     }
 
     int Processor::StopTranscode() {
