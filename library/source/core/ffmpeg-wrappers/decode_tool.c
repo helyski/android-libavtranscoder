@@ -110,8 +110,15 @@ int get_decode_info_from_input(AVFormatContext *input_ctx,VideoInfo *pVideoInfo,
                pVideoInfo->bitrate = input_ctx->bit_rate;
                pVideoInfo->width = codecpar->width;
                pVideoInfo->height = codecpar->height;
+               // Get FPS from AVStream avg_frame_rate.
                if(st->avg_frame_rate.den > 0) {
                    pVideoInfo->fps = st->avg_frame_rate.num / st->avg_frame_rate.den;
+               }
+               // Get FPS from AVStream r_frame_rate.
+               if(pVideoInfo->fps <=0) {
+                   if(st->r_frame_rate.den > 0) {
+                       pVideoInfo->fps = st->r_frame_rate.num / st->r_frame_rate.den;
+                   }
                }
                if(pVideoInfo->fps <=0) {
                    if (st->codec->framerate.den > 0) {
