@@ -9,6 +9,7 @@ Dispatcher::Dispatcher() {
     mExit = false;
     mVideoBuffer = 0;
     mLastIndex = 0;
+    mVideoCallBack = 0;
 }
 
 Dispatcher::~Dispatcher(){

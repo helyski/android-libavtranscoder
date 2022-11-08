@@ -12,6 +12,7 @@ extern "C"
         mIsThreadStart = false;
         mExit = false;
         mDecodeOutputBuffer = 0;
+        mStatListener = 0;
     }
 
     Decoder::~Decoder() {
@@ -215,6 +216,16 @@ extern "C"
             }
         }
 
+        int stat = 0;
+        if(mIsThreadStart==false || mExit){
+            stat = CODEC_EXIT_CALL;
+        }else{
+            stat = CODEC_EXIT_AUTO;
+        }
+        LOGW("Decoder_tid%d::process stat = %d",thread_id,stat);
+        if(mStatListener){
+            mStatListener(stat);
+        }
         LOGW("Decoder_tid%d::process exit 0!",thread_id);
 
         return false;
@@ -253,6 +264,11 @@ extern "C"
         }
         return time_ms;
     }
+
+//    int Decoder::SetStateListener(encoder_state_call_back listener) {
+//        mStatListener = listener;
+//        return 0;
+//    }
 
 }
 

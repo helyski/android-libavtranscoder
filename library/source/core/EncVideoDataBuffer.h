@@ -24,6 +24,9 @@ public:
 
     int FlushBuffer();
 
+private :
+    Lock mBufferLock;
+
 };
 
 #endif //ANDROID_LIBTRANSCODE_ENCVIDEODATABUFFER

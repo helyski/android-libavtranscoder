@@ -11,12 +11,14 @@
 #include "RingQueue.h"
 #include "timetool.h"
 #include "RawVideoDataBuffer.h"
+#include "common.h"
+#include "functional"
 
 extern "C"
 {
 // C file must be contained in extern C statement
 #include "hw_decode.h"
-
+using namespace std;
 class Decoder : public SingleThread::ThreadProc {
 public:
     Decoder();
@@ -30,6 +32,10 @@ public:
     int SetDecodeFileInfo(const char *srcVideoPath, float seek_seconds);
 
     int SetDecodeBuffer(RawVideoDataBuffer *decodeOutputBuffer);
+
+    void SetStateListener(const std::function<void(int)> &listener) {
+        mStatListener = listener;
+    }
 
 private:
     bool process(int thread_id, void *env);
@@ -45,6 +51,9 @@ private:
     float mDecodeSeekSeconds;
 
     RawVideoDataBuffer *mDecodeOutputBuffer;
+
+    std::function<void(int)> mStatListener;
+
 
     Lock mDecoderLock;
 };

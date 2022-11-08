@@ -187,9 +187,17 @@ if(!env){
 //                                LOGW("Encoder :: GetFrame len:%d,timestamp:%llu", iH264Len, Timestamp);
                                 if (bGetOneNal && pH264 && len > 0) {
 //                                    LOGW("Encoder :: GetFrame ret:%d, frame_size:%d,timestamps:%d,encode_frames:%d", bGetOneNal, len,Timestamp,encode_frames);
+                                    {
+                                        AutoLock lock(mH264Buffer->GetLock());
 
-                                    mH264Buffer->Enqueue((const char*)pH264,get_nal_type(pH264,len),len,mDestWidth,mDestHeight,pts,get_system_current_time_millis(),++encode_frames);
-                                    LOGW("Encoder :: GetFrame ret:%d, frame_size:%d,timestamps:%lld,encode_frames:%d", bGetOneNal, len,pts,encode_frames);
+                                        mH264Buffer->Enqueue((const char *) pH264,
+                                                             get_nal_type(pH264, len), len,
+                                                             mDestWidth, mDestHeight, pts,
+                                                             get_system_current_time_millis(),
+                                                             ++encode_frames);
+                                        LOGW("Encoder :: GetFrame ret:%d, frame_size:%d,timestamps:%lld,encode_frames:%d",
+                                             bGetOneNal, len, pts, encode_frames);
+                                    }
 
 //                                    if (file && len > 0 && pH264) {
                                         // todo convert yuv format here for next test.Current encoded frame color space is not correct.

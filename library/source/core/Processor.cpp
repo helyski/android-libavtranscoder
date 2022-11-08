@@ -106,6 +106,10 @@ extern "C"
                 mDecoder = NULL;
             }
             mDecoder = new Decoder();
+            mDecoder->SetStateListener([this](int state){
+                return this->OnDecoderStatChanged(state);
+            });
+//            mDecoder->SetStateListener(std::bind(&Processor::OnDecoderStatChanged, this, std::placeholders::_1));
             mDecoder->SetDecodeFileInfo(videoPath, seek_seconds);
             mDecoder->SetDecodeBuffer(mDecodeBuffer);
             mDecoder->StartThread();
@@ -122,6 +126,12 @@ extern "C"
             mEncoder->StartThread();
 
 
+            if(mDataDest==1){
+                mDispatcher = new Dispatcher();
+                mDispatcher->SetDateBuffer(mEncodeBuffer);
+                mDispatcher->StartThread();
+                SetVideoFrameCallBack(mFrameCallBack);
+            }
 
         }
 
@@ -132,6 +142,7 @@ extern "C"
 
     int Processor::StopTranscode() {
         {
+            LOGD("StopTranscode start...");
             AutoLock lock(mProcLock);
 
 
@@ -139,6 +150,9 @@ extern "C"
                 mDecoder->StopThread();
                 delete mDecoder;
                 mDecoder = NULL;
+                //Release ffmpeg_mediacodec decoder.
+                //FIXME When lib stable ,you can move this to Decoder.
+                release_decoder_ctx();
             }
 
 
@@ -146,6 +160,17 @@ extern "C"
                 mEncoder->StopThread();
                 delete mEncoder;
                 mEncoder = NULL;
+                //Release mediacodec encoder.
+                //FIXME When lib stable ,you can move this to Encoder.
+                if (mAvcCoder.isOpened()) {
+                    mAvcCoder.CloseCodec();
+                }
+            }
+
+            if(mDispatcher){
+                mDispatcher->StopThread();
+                delete mDispatcher;
+                mDispatcher = NULL;
             }
 
             if(mDecodeBuffer){
@@ -154,10 +179,9 @@ extern "C"
             if(mEncodeBuffer){
                 mEncodeBuffer->FlushBuffer();
             }
-
-            stopMediaCodec();
         }
 
+        LOGD("StopTranscode finish...");
         return 0;
     }
 
@@ -180,9 +204,7 @@ extern "C"
         // release ffmpeg mediacodec.
         release_decoder_ctx();
         // release jni mediacodec.
-        if (mAvcCoder.isOpened()) {
-            mAvcCoder.CloseCodec();
-        }
+
         return 0;
     }
 
@@ -193,12 +215,7 @@ extern "C"
     int Processor::SetVideoOutputType(int type,video_frame_call_back cb) {
         LOGD("SetVideoOutputType type = %d",type);
         mDataDest = type;
-        if(mDataDest==1){
-            mDispatcher = new Dispatcher();
-            mDispatcher->SetDateBuffer(mEncodeBuffer);
-            mDispatcher->StartThread();
-        }
-        SetVideoFrameCallBack(cb);
+        mFrameCallBack = cb;
         return 0;
     }
 
@@ -210,6 +227,17 @@ extern "C"
         return 0;
     }
 
+    void Processor::OnDecoderStatChanged(int stat) {
+        LOGD("Processor::OnDecoderStatChanged stat:%d",stat);
+        if(CODEC_EXIT_AUTO == stat){
+            StopTranscode();
+        }
+    }
+
+    int Processor::OnEncoderStatChanged(enum CODEC_STAT stat) {
+        return 0;
+    }
+
 
     bool Processor::process(int thread_id, void *env) {
         while(!mExit){
@@ -217,6 +245,8 @@ extern "C"
         }
         return false;
     }
+
+
 
 
 

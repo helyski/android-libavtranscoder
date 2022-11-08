@@ -11,6 +11,7 @@
 #include "AVCCoder.h"
 #include "Dispatcher.h"
 #include "common.h"
+#include "functional"
 
 extern "C"
 {
@@ -45,6 +46,10 @@ extern "C"
 
         int SetVideoOutputType(int type,video_frame_call_back cb);
 
+        void OnDecoderStatChanged(int stat);
+
+        int OnEncoderStatChanged(enum CODEC_STAT stat);
+
     private:
         bool process(int thread_id, void *env);
         int OnDestroy();
@@ -68,6 +73,8 @@ extern "C"
 
         RawVideoDataBuffer *mDecodeBuffer;
         EncVideoDataBuffer *mEncodeBuffer;
+
+        video_frame_call_back mFrameCallBack;
 
         int mDataDest;
 
