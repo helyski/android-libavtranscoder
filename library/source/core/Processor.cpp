@@ -106,7 +106,7 @@ extern "C"
             delete mEncoder;
             mEncoder = NULL;
         }
-        mEncoder = new Encoder(mAvcCoder);
+        mEncoder = new Encoder(mAvcCoder,mDecoder,width,height,bitrate);
         mEncoder->SetInputBuffer(mDecodeBuffer);
         mEncoder->SetOutputBuffer(mEncodeBuffer);
         mEncoder->StartThread();

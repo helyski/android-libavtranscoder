@@ -16,6 +16,7 @@
 #include "YUVWrapper.h"
 #include "RawVideoDataBuffer.h"
 #include "EncVideoDataBuffer.h"
+#include "Decoder.h"
 
 extern "C"
 {
@@ -27,7 +28,7 @@ extern "C"
 
     class Encoder : public SingleThread::ThreadProc{
     public:
-        Encoder(CAVCCoder coder);
+        Encoder(CAVCCoder coder,Decoder *decoder,int width,int height,int bitrate);
 
         ~Encoder();
 
@@ -55,6 +56,8 @@ extern "C"
         EncVideoDataBuffer *mH264Buffer;
 
         CAVCCoder avcCoder;
+
+        Decoder *mDecoder;
 
         int mSrcWidth;
         int mSrcHeight;

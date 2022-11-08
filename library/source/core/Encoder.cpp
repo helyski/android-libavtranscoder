@@ -8,23 +8,24 @@ using namespace libyuv;
 extern "C"
 {
 
-    Encoder::Encoder(CAVCCoder coder){
+    Encoder::Encoder(CAVCCoder coder,Decoder *decoder,int width,int height,int bitrate){
         mIsThreadStart = false;
         mExit = false;
 
         avcCoder = coder;
+        mDecoder = decoder;
 
 
         /*
          * Default settings.
          */
-        mSrcWidth = 1280;
-        mSrcHeight = 720;
+        mSrcWidth = 0;
+        mSrcHeight = 0;
 
-        mDestWidth = 640;
-        mDestHeight = 480;
+        mDestWidth = width;
+        mDestHeight = height;
+        mDestBitrate = bitrate;
 
-        mDestBitrate = 2000000;
         mFPS = 20;
 
     }
@@ -106,7 +107,32 @@ extern "C"
 
         int encode_frames = 0;
 
+        int getDecodeInfo = 0;
 
+        LOGW("Encoder_tid%d::get codec info start!",thread_id);
+        while (!getDecodeInfo && !mExit){
+            if(mDecoder->GetVideoCodecInfo()){
+                LOGW("Encoder_tid%d::get from decoder");
+                mSrcWidth = mDecoder->GetVideoCodecInfo()->width;
+                mSrcHeight = mDecoder->GetVideoCodecInfo()->height;
+                getDecodeInfo = 1;
+            }else{
+                usleep(1000);
+            }
+        }
+        LOGW("Encoder_tid%d::got codec info finished! srcWidth:%d,srcHeight;%d",thread_id,mSrcWidth,mSrcHeight);
+
+        if(mSrcWidth<=0 || mSrcHeight<=0){
+            mSrcWidth = DEFAULT_WIDTH;
+            mSrcHeight = DEFAULT_HEIGHT;
+        }
+
+        LOGW("Encoder_tid%d::encode target width:%d, height:%d, bitrate:%d",thread_id,mDestWidth,mDestHeight,mDestBitrate);
+        if(mDestWidth<=0 || mDestHeight<=0){
+            mDestWidth = DEFAULT_TARGET_WIDTH;
+            mDestHeight = DEFAULT_TARGET_HEIGHT;
+            mDestBitrate = DEFAULT_TARGET_BITRATE;
+        }
 
 //        int nead_detach = 0;
 //        JNIEnv *mEnv = hv_get_jni_env(&nead_detach);

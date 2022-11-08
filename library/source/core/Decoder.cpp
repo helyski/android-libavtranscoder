@@ -13,6 +13,9 @@ extern "C"
         mExit = false;
         mDecodeOutputBuffer = 0;
         mStatListener = 0;
+
+        mVideoInfo = 0;
+        mDecodeSeekSeconds = 0;
     }
 
     Decoder::~Decoder() {
@@ -63,7 +66,7 @@ extern "C"
         int ret = 0,frame_index = 0;
         unsigned char *yuv_buffer=0;
         int yuv_size;
-        VideoInfo *videoInfo;
+
         unsigned long long sleep_time ,start_decode_time,finish_decode_time,used_time,max_handle_time;
         sleep_time = 0;
         start_decode_time = 0;
@@ -76,12 +79,12 @@ extern "C"
 //                goto proc_end;
 //            }
             // Check video codec info.If info not found,proc will exit.
-            videoInfo = get_video_info();
-            if (!videoInfo || videoInfo->width <= 0 || videoInfo->height <= 0) {
+            mVideoInfo = get_video_info();
+            if (!mVideoInfo || mVideoInfo->width <= 0 || mVideoInfo->height <= 0) {
                 goto proc_end;
             }
             // Calculating loop frequency.
-            max_handle_time = GetFrameMaxHandleTimeMS(videoInfo->fps);
+            max_handle_time = GetFrameMaxHandleTimeMS(mVideoInfo->fps);
             if (max_handle_time <= 0) {
                 goto proc_end;
             }
@@ -158,7 +161,7 @@ extern "C"
 //                        }
 //                        mDecodeOutputBuffer->push(*yuvFrame);
 
-                        mDecodeOutputBuffer->Enqueue((const char*)yuv_buffer,videoInfo->width,videoInfo->height,yuv_size,get_system_current_time_millis(),1,++frame_index);
+                        mDecodeOutputBuffer->Enqueue((const char*)yuv_buffer,mVideoInfo->width,mVideoInfo->height,yuv_size,get_system_current_time_millis(),1,++frame_index);
                     }
 
                     add_queue_finish_time = get_system_current_time_millis();
@@ -264,6 +267,10 @@ extern "C"
         }
         return time_ms;
     }
+
+VideoInfo * Decoder::GetVideoCodecInfo(){
+    return mVideoInfo;
+}
 
 //    int Decoder::SetStateListener(encoder_state_call_back listener) {
 //        mStatListener = listener;

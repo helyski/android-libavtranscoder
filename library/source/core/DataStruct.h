@@ -7,6 +7,13 @@
 
 #include "stdint.h"
 
+#define DEFAULT_WIDTH 1280
+#define DEFAULT_HEIGHT 720
+#define DEFAULT_TARGET_WIDTH 640
+#define DEFAULT_TARGET_HEIGHT 480
+#define DEFAULT_TARGET_BITRATE 2000000
+
+
 typedef struct _basicTranscodingParams{
     int width;
     int height;

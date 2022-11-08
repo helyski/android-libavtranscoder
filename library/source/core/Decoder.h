@@ -37,6 +37,8 @@ public:
         mStatListener = listener;
     }
 
+    VideoInfo * GetVideoCodecInfo();
+
 private:
     bool process(int thread_id, void *env);
     static int GetFrameMaxHandleTimeMS(int fps);
@@ -51,6 +53,8 @@ private:
     float mDecodeSeekSeconds;
 
     RawVideoDataBuffer *mDecodeOutputBuffer;
+
+    VideoInfo *mVideoInfo;
 
     std::function<void(int)> mStatListener;
 
