@@ -1,4 +1,4 @@
-package com.mg.examples.libtranscode;
+package com.tank3.examples.libtranscode;
 
 import android.Manifest;
 import android.annotation.TargetApi;

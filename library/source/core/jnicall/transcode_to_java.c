@@ -34,7 +34,7 @@ int init_transcode_java_api(){
 
     if(env) {
         jclass java_clazz = NULL;
-        java_clazz = (*env)->FindClass(env, "com/mg/libtranscode/JNILibTranscode");
+        java_clazz = (*env)->FindClass(env, "com/tank3/libtranscode/JNILibTranscode");
         if(java_clazz){
             javactx->java_api_clazz = (jclass) (*env)->NewGlobalRef(env, java_clazz);
             if(javactx->java_api_clazz){
