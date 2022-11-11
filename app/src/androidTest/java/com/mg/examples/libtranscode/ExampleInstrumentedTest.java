@@ -1,11 +1,10 @@
-package com.tangjn.examples.libtranscode;
+package com.mg.examples.libtranscode;
 
 import android.content.Context;
 import android.support.test.InstrumentationRegistry;
 
 
 import org.junit.Test;
-import org.junit.runner.RunWith;
 
 import static org.junit.Assert.*;
 
@@ -20,6 +19,6 @@ public class ExampleInstrumentedTest {
     public void useAppContext() {
         // Context of the app under test.
         Context appContext = InstrumentationRegistry.getInstrumentation().getTargetContext();
-        assertEquals("com.tangjn.examples.ffmpeg", appContext.getPackageName());
+        assertEquals("com.mg.examples.ffmpeg", appContext.getPackageName());
     }
 }

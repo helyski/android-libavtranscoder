@@ -1,4 +1,4 @@
-package com.tangjn.libtranscode;
+package com.mg.libtranscode;
 
 import java.nio.ByteBuffer;
 
@@ -119,7 +119,7 @@ public class JNILibTranscode {
     static {
         System.loadLibrary("x265");
         System.loadLibrary("yuv");
-        System.loadLibrary("ffmpeg");
+        System.loadLibrary("ffmpegandroid");
         System.loadLibrary("avtranscoder");
     }
 }

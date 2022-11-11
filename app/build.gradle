@@ -7,7 +7,7 @@ android {
 //    buildToolsVersion "27.0.3"
 
     defaultConfig {
-        applicationId "com.tangjn.examples.libtranscode"
+        applicationId "com.mg.examples.libtranscode"
         minSdkVersion 19
         targetSdkVersion 26
         versionCode 1

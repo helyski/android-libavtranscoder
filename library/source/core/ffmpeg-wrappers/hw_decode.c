@@ -53,7 +53,7 @@ int release_decoder_ctx(){
 
     packet.data = NULL;
     packet.size = 0;
-
+    // flush decoder
     decode(decoder_ctx,&packet,0,0);
 
     // TODO need to fix this,av_packet_unref will crash in google nexus5 android11.
@@ -375,8 +375,6 @@ int decode(AVCodecContext *avctx, AVPacket *packet,unsigned char **output_buffer
         }
 
         LOGW("Decoder decode packet data:%d,packet size:%d\n",packet->data,packet->size);
-
-
 
         if(*output_buffer){
             free(*output_buffer);

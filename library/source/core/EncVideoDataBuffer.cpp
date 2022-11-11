@@ -12,6 +12,7 @@ EncVideoDataBuffer::~EncVideoDataBuffer() {
 }
 
 int EncVideoDataBuffer::Enqueue(const char *h264,int nal_type,int len,int width,int height,int64_t pts,int64_t sys_time,int index) {
+    AutoLock lock(mBufferLock);
     if(!h264 || len<=0)
         return -1;
     bool ret;
@@ -43,10 +44,12 @@ int EncVideoDataBuffer::Enqueue(const char *h264,int nal_type,int len,int width,
 }
 
 H264Frame * EncVideoDataBuffer::GetHeadFrame() {
+    AutoLock lock(mBufferLock);
     return (H264Frame*)GetFront();
 }
 
 int EncVideoDataBuffer::FlushBuffer() {
+    AutoLock lock(mBufferLock);
     EraseQueue();
     return 0;
 }
